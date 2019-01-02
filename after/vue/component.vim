@@ -15,13 +15,19 @@ if exists('s:vue_component')
 endif
 
 let s:vue_component = 1
+
+" use when creating  and finding component files
 let s:middleName = 'comp'
-let s:vueExtension = 'vue'
+
+" only use when creating component files
 let s:scriptExtension = 'js'
 let s:cssExtension = 'css'
 
-" only use when find file
-let s:supportScriptExtensionList = [ 'js', 'ts']
+" only use when finding component files
+"
+" wpy is used for https://github.com/Tencent/wepy
+let s:supportVueExtensionList = ['vue', 'wpy']
+let s:supportScriptExtensionList = [ 'js', 'ts', 'jsx', 'json']
 let s:supportCssExtensionList = ['css', 'scss', 'less']
 
 if exists('g:vue_component_middle_name') && strlen(g:vue_component_middle_name) > 0
@@ -50,6 +56,7 @@ function! s:CreateAndSaveFile(filePath)
     execute ':saveas ' . a:filePath
     execute ':quit'
 endfunction
+
 
 function! s:makeCssFile(vueFile, extension)
     let theExtension = a:extension
@@ -153,6 +160,17 @@ function! s:LayoutComponent(vueFile)
 
 endfunction
 
+function! s:findVueFile(prefix)
+    for extension in s:supportVueExtensionList
+        let file = a:prefix . '.' . extension
+        if filereadable(file)
+            return file
+        endif
+    endfor
+    return ''
+endfunction
+
+
 function! s:LayoutCurrentComponent()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
@@ -160,22 +178,22 @@ function! s:LayoutCurrentComponent()
 
     let vueFile = ''
 
-    if extension ==# s:vueExtension
+    if index(s:supportVueExtensionList, extension)
         let vueFile = file
     elseif index(s:supportCssExtensionList, extension) > -1
         let cssFile = fnamemodify(file, ':r')
         let cssFileWithoutMiddle = fnamemodify(cssFile, ':r')
-        let vueFile = cssFileWithoutMiddle . '.' . s:vueExtension
+        let vueFile = s:findVueFile(cssFileWithoutMiddle)
     elseif index(s:supportScriptExtensionList, extension) > -1
         let scriptFile = fnamemodify(file, ':r')
         let scriptFileWithoutMiddle = fnamemodify(scriptFile, ':r')
-        let vueFile = scriptFileWithoutMiddle . '.' . s:vueExtension
+        let vueFile = s:findVueFile(scriptFileWithoutMiddle)
     endif
 
     if strlen(vueFile) > 0
         call s:LayoutComponent(vueFile)
     else
-        echoerr 'Can not find .vue file for current buffer'
+        echoerr 'Can not find vue file for current buffer'
     endif
 endfunction
 
