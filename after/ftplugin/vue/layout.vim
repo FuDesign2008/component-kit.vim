@@ -2,17 +2,17 @@
 " insert jira content into markdown as a list item with link
 "
 
-" if &compatible || exists('b:vue_component')
-    " finish
-" endif
+if &compatible || exists('b:vue_component')
+    finish
+endif
 let b:vue_component = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 
-" if exists('s:vue_component')
-    " finish
-" endif
+if exists('s:vue_component')
+    finish
+endif
 
 let s:vue_component = 1
 let s:middleName = 'comp'
