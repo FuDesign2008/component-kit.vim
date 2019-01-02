@@ -179,8 +179,8 @@ function! s:LayoutCurrentComponent()
     endif
 endfunction
 
-command! -nargs=1 -complete=file CreateComponent call s:CreateComponent(<f-args>)
-command! LayoutComponent call s:LayoutCurrentComponent()
+command! -nargs=1 -complete=file VueCreate call s:CreateComponent(<f-args>)
+command! VueLayout call s:LayoutCurrentComponent()
 
 let &cpoptions = s:save_cpo
 
