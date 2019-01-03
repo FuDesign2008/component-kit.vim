@@ -178,7 +178,7 @@ function! s:LayoutCurrentComponent()
 
     let vueFile = ''
 
-    if index(s:supportVueExtensionList, extension)
+    if index(s:supportVueExtensionList, extension) > -1
         let vueFile = file
     elseif index(s:supportCssExtensionList, extension) > -1
         let cssFile = fnamemodify(file, ':r')
