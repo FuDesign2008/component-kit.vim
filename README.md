@@ -13,10 +13,11 @@ Tools for vue-like component
 1. `VueCreate`: create vue component files
     - `VueCreate Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css` files
     - `VueCreate Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files
-1. `VueLayout`: Close all windows and layout vue component files. The layout is like this:
+1. `VueLayout`: close all windows and layout vue component files.
 
 ```
 
+ // :VueLayout
 -----------------
 | .vue  |       |
 |       |       |
@@ -37,3 +38,20 @@ This toolkit supports vue-like component:
 ## Next
 
 1. add snippets for `.vue`/`.js`/`.css` files
+1. add commands
+    - `VueLay`: close all windows and layout vue component files.
+    - `VueAlt`: switch vue -> css -> script file
+
+```
+
+ // :VueLay
+
+-----------------
+|       |       |
+|       |       |
+| .vue  |  .js  |
+|       |       |
+|       |       |
+-----------------
+
+```
