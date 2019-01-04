@@ -38,6 +38,10 @@ This toolkit supports vue-like component:
 ## Next
 
 1. add snippets for `.vue`/`.js`/`.css` files
+
+    - `g:vue_component_template_dir`, find `template.js` for `.js`, `template.vue` for `.vue`, ...
+    - if `g:vue_component_template_dir` is not set, find `.vue-component-template` folder from project root, current directory, or home(`~`)
+
 1. add commands
     - `VueLay`: close all windows and layout vue component files.
     - `VueAlt`: switch vue -> css -> script file
