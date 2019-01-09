@@ -14,6 +14,8 @@ if exists('s:vue_component')
     finish
 endif
 
+let s:scriptDir= expand('<sfile>:p:h')
+
 let s:vue_component = 1
 
 " use when creating  and finding component files
@@ -50,6 +52,22 @@ if index(s:supportCssExtensionList, s:cssExtension) == -1
     call add(s:supportCssExtensionList, s:cssExtension)
 endif
 
+" @return {String}
+function! s:findTemplateFile(file, templateDir)
+    if strlen(a:templateDir) == 0
+        return ''
+    endif
+
+    let extension = fnamemodify(a:file, ':e')
+    let templateFileName = 'template.' . extension
+    let templateFile = a:templateDir . '/' . templateFileName
+
+    if filereadable(templateFile)
+        return templateFile
+    endif
+
+    return ''
+endfunction
 
 function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNameCamel)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
@@ -57,8 +75,8 @@ function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNam
     execute ':enew'
     if strlen(templateFilePath) > 0
         execute ':e ' . templateFilePath
-        execute ':%s/ComponentName/' . a:componentName . '/g'
-        execute ':%s/component-name/' . a:componentNameCamel . '/g'
+        execute ':%s/ComponentName/' . a:componentName . '/ge'
+        execute ':%s/component-name/' . a:componentNameCamel . '/ge'
     endif
     execute ':saveas ' . a:filePath
     " execute ':quit'
@@ -125,8 +143,7 @@ endfunction
 function! s:findTemplateDir()
     if exists('g:vue_component_template_dir')
         if g:vue_component_template_dir ==# 'built-in'
-            let scriptPath = expand('<sfile>:p')
-            return scriptPath . '/' . 'templates'
+            return s:scriptDir . '/' . 'templates'
         endif
         if !isdirectory(g:vue_component_template_dir)
             echoerr 'g:vue_component_template_dir is not a directory: ' . g:vue_component_template_dir
@@ -144,22 +161,6 @@ function! s:findTemplateDir()
     return ''
 endfunction
 
-" @return {String}
-function! s:findTemplateFile(file, templateDir)
-    if strlen(a:templateDir) == 0
-        return ''
-    endif
-
-    let extension = fnamemodify(a:file, ':e')
-    let templateFileName = 'template' . extension
-    let templateFile = a:templateDir . '/' . templateFileName
-
-    if filereadable(templateFile)
-        return templateFile
-    endif
-
-    return ''
-endfunction
 
 function! s:CreateComponent(vueFile)
     let scriptFile = s:makeScriptFile(a:vueFile, '')
