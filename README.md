@@ -7,6 +7,10 @@ Tools for vue-like component
 1. `g:vue_component_middle_name`: The middle name for creating & finding script/css file, default is `'comp'`
 1. `g:vue_component_script_extension`: The extention for creating & finding script file, default is `'js'`
 1. `g:vue_component_css_extension`: The extention for creating & finding css file, default is `'css'`
+1. `g:vue_component_template_dir`: The template directory for creating component ( @see `:VueCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on.
+    - If `g:vue_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin
+    - If `g:vue_component_template_dir` is not set, the plugin will find `.vue-component-template` directory up util home (`~`)
+    - The word `ComponentName`/`component-name` in `.vue`/`.wpy` file will be replaced by true component name
 
 ## Commands
 
@@ -46,14 +50,3 @@ This toolkit supports vue-like component:
 
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
-
-## Next
-
-1. add snippets for `.vue`/`.js`/`.css` files
-
-    - `g:vue_component_template_dir`, find `template.js` for `.js`, `template.vue` for `.vue`, ...
-    - if `g:vue_component_template_dir` is not set, find
-    - `vue-component-template` folder from project root
-    - `vue-component-template` from current directory
-    - `vue-component-template` from home(`~`)
-    - templates from plugin itself

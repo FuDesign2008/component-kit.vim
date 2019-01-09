@@ -51,8 +51,26 @@ if index(s:supportCssExtensionList, s:cssExtension) == -1
 endif
 
 
-function! s:CreateAndSaveFile(filePath)
+function! s:CreateAndSaveFile(filePath, templateDir)
+    let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
+
     execute ':enew'
+    if strlen(templateFilePath) > 0
+        execute ':e ' . templateFilePath
+
+        let extension = fnamemodify(a:filePath, ':e')
+        let vueExtentions = ['vue', 'wpy']
+        let isVue = index(vueExtentions, extension) > -1
+        if isVue
+            let componentName = fnamemodify(a:filePath, ':t:r')
+            let componentNameCamel = substitute(componentName, '\C[A-Z]',
+                \ '\= "-" . tolower(submatch(0))',
+                \ 'g')
+            let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
+            execute ':%s/ComponentName/' . componentName . '/g'
+            execute ':%s/component-name/' . componentNameCamel . '/g'
+        endif
+    endif
     execute ':saveas ' . a:filePath
     execute ':quit'
 endfunction
@@ -94,6 +112,66 @@ function! s:makeScriptFileList(vueFile)
     return fileList
 endfunction
 
+
+
+" @return {String}
+function! s:findTemplateDirUp()
+    let currentDir = fnamemodify(getcwd(), ':p')
+    let templateDirName = '.vue-component-template'
+
+    " the length of the root path  will more than 1
+    while strlen(currentDir) > 1
+        let templateDir = currentDir . '/' . templateDirName
+        if isdirectory(templateDir)
+            return templateDir
+        endif
+        let currentDir = fnamemodify(currentDir, ':h')
+    endwhile
+
+    return ''
+endfunction
+
+
+" @return {String}
+function! s:findTemplateDir()
+    if exists('g:vue_component_template_dir') && g:vue_component_template_dir
+        if g:vue_component_template_dir ==# 'built-in'
+            let scriptPath = expand('<sfile>:p')
+            return scriptPath . '/' . 'templates'
+        endif
+        if !isdirectory(g:vue_component_template_dir)
+            echoerr 'g:vue_component_template_dir is not a directory: ' . g:vue_component_template_dir
+            return ''
+        endif
+        return g:vue_component_template_dir
+    else
+        let templateDir = s:findTemplateDirUp()
+        if strlen(templateDir) > 0
+            return templateDir
+        endif
+    endif
+
+    echoerr 'Can not find .vue-component-template directory, please set g:vue_component_template_dir in .vimrc'
+    return ''
+endfunction
+
+" @return {String}
+function! s:findTemplateFile(file, templateDir)
+    if strlen(a:templateDir) == 0
+        return ''
+    endif
+
+    let extension = fnamemodify(a:file, ':e')
+    let templateFileName = 'template' . extension
+    let templateFile = a:templateDir . '/' . templateFileName
+
+    if filereadable(templateFile)
+        return templateFile
+    endif
+
+    return ''
+endfunction
+
 function! s:CreateComponent(vueFile)
     let scriptFile = s:makeScriptFile(a:vueFile, '')
     let cssFile = s:makeCssFile(a:vueFile, '')
@@ -111,8 +189,10 @@ function! s:CreateComponent(vueFile)
         call mkdir(targetDir, 'p')
     endif
 
+    let templateDir = s:findTemplateDir()
+
     for theFile in fileList
-        call s:CreateAndSaveFile(theFile)
+        call s:CreateAndSaveFile(theFile, templateDir)
     endfor
 
     call s:LayoutComponent(a:vueFile, 1)
