@@ -13,7 +13,9 @@ Tools for vue-like component
 1. `VueCreate`: create vue component files
     - `VueCreate Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css` files
     - `VueCreate Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files
-1. `VueLayout`: close all windows and layout vue component files.
+1. `VueLayout`: close all windows and layout all component files.
+1. `VueLay`: close all windows and layout vue and script files.
+1. `VueAlt`: switch vue -> css -> script -> vue ... file
 
 ```
 
@@ -23,6 +25,16 @@ Tools for vue-like component
 |       |       |
 |-------|  .js  |
 | .css  |       |
+|       |       |
+-----------------
+
+ // :VueLay
+
+-----------------
+|       |       |
+|       |       |
+| .vue  |  .js  |
+|       |       |
 |       |       |
 -----------------
 
@@ -45,21 +57,3 @@ This toolkit supports vue-like component:
     - `vue-component-template` from current directory
     - `vue-component-template` from home(`~`)
     - templates from plugin itself
-
-1. add commands
-    - `VueLay`: close all windows and layout vue component files.
-    - `VueAlt`: switch vue -> css -> script file
-
-```
-
- // :VueLay
-
------------------
-|       |       |
-|       |       |
-| .vue  |  .js  |
-|       |       |
-|       |       |
------------------
-
-```

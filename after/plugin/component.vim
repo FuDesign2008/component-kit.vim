@@ -115,11 +115,11 @@ function! s:CreateComponent(vueFile)
         call s:CreateAndSaveFile(theFile)
     endfor
 
-    call s:LayoutComponent(a:vueFile)
+    call s:LayoutComponent(a:vueFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
-function! s:getScriptFile(vueFile)
+function! s:findScriptFile(vueFile)
     let fileList = s:makeScriptFileList(a:vueFile)
     for theFile in fileList
         if filereadable(theFile)
@@ -129,7 +129,7 @@ function! s:getScriptFile(vueFile)
     return get(fileList, 0, '')
 endfunction
 
-function! s:getCssFile(vueFile)
+function! s:findCssFile(vueFile)
     let fileList = s:makeCssFileList(a:vueFile)
     for theFile in fileList
         if filereadable(theFile)
@@ -141,10 +141,14 @@ endfunction
 
 
 
-function! s:LayoutComponent(vueFile)
-    let scriptFile = s:getScriptFile(a:vueFile)
-    let cssFile = s:getCssFile(a:vueFile)
-    let fileList = [a:vueFile, scriptFile, cssFile]
+function! s:LayoutComponent(vueFile, includeCss)
+    let scriptFile = s:findScriptFile(a:vueFile)
+    let cssFile = s:findCssFile(a:vueFile)
+    let fileList = [a:vueFile, scriptFile]
+
+    if a:includeCss
+        call add(fileList, cssFile)
+    endif
 
     for theFile in fileList
         if !filereadable(theFile)
@@ -155,9 +159,12 @@ function! s:LayoutComponent(vueFile)
 
     execute ':new ' . scriptFile
     execute ':only'
-    execute ':vnew ' . cssFile
-    execute ':new ' . a:vueFile
-
+    if a:includeCss
+        execute ':vnew ' . cssFile
+        execute ':new ' . a:vueFile
+    else
+        execute ':vnew ' . a:vueFile
+    endif
 endfunction
 
 function! s:findVueFile(prefix)
@@ -191,7 +198,83 @@ function! s:LayoutCurrentComponent()
     endif
 
     if strlen(vueFile) > 0
-        call s:LayoutComponent(vueFile)
+        call s:LayoutComponent(vueFile, 1)
+    else
+        echoerr 'Can not find vue file for current buffer'
+    endif
+endfunction
+
+function! s:LayoutVueAndScript()
+    let file = expand('%')
+    let extension = fnamemodify(file, ':e')
+    let lower = tolower(extension)
+
+    let vueFile = ''
+
+    if index(s:supportVueExtensionList, extension) > -1
+        let vueFile = file
+    elseif index(s:supportCssExtensionList, extension) > -1
+        let cssFile = fnamemodify(file, ':r')
+        let cssFileWithoutMiddle = fnamemodify(cssFile, ':r')
+        let vueFile = s:findVueFile(cssFileWithoutMiddle)
+    elseif index(s:supportScriptExtensionList, extension) > -1
+        let scriptFile = fnamemodify(file, ':r')
+        let scriptFileWithoutMiddle = fnamemodify(scriptFile, ':r')
+        let vueFile = s:findVueFile(scriptFileWithoutMiddle)
+    endif
+
+    if strlen(vueFile) > 0
+        call s:LayoutComponent(vueFile, 0)
+    else
+        echoerr 'Can not find vue file for current buffer'
+    endif
+endfunction
+
+" @param {String} vueFile
+" @param {String} targetType  valid values: vue, css, script
+function! s:SwitchFile(vueFile, targetType)
+    let targetFile = ''
+    if a:targetType ==# 'vue'
+        let targetFile = a:vueFile
+    elseif a:targetType ==# 'css'
+        let targetFile = s:findCssFile(a:vueFile)
+    elseif a:targetType ==# 'script'
+        let targetFile = s:findScriptFile(a:vueFile)
+    endif
+
+    if strlen(targetFile) > 0
+        execute ':e ' targetFile
+    else
+        echoerr 'Can not find '. a:targetType . 'for current buffer'
+    endif
+endfunction
+
+
+function! s:SwitchCurrentComponent()
+    let file = expand('%')
+    let extension = fnamemodify(file, ':e')
+    let lower = tolower(extension)
+
+    let vueFile = ''
+    let targetType = ''
+
+    if index(s:supportVueExtensionList, extension) > -1
+        let vueFile = file
+        let targetType = 'css'
+    elseif index(s:supportCssExtensionList, extension) > -1
+        let cssFile = fnamemodify(file, ':r')
+        let cssFileWithoutMiddle = fnamemodify(cssFile, ':r')
+        let vueFile = s:findVueFile(cssFileWithoutMiddle)
+        let targetType = 'script'
+    elseif index(s:supportScriptExtensionList, extension) > -1
+        let scriptFile = fnamemodify(file, ':r')
+        let scriptFileWithoutMiddle = fnamemodify(scriptFile, ':r')
+        let vueFile = s:findVueFile(scriptFileWithoutMiddle)
+        let targetType = 'vue'
+    endif
+
+    if strlen(vueFile) > 0
+        call s:SwitchFile(vueFile, targetType)
     else
         echoerr 'Can not find vue file for current buffer'
     endif
@@ -199,6 +282,8 @@ endfunction
 
 command! -nargs=1 -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
+command! VueLay call s:LayoutVueAndScript()
+command! VueAlt call s:SwitchCurrentComponent()
 
 let &cpoptions = s:save_cpo
 
