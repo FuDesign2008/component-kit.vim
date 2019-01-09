@@ -61,7 +61,7 @@ function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNam
         execute ':%s/component-name/' . a:componentNameCamel . '/g'
     endif
     execute ':saveas ' . a:filePath
-    execute ':quit'
+    " execute ':quit'
 endfunction
 
 
@@ -168,7 +168,7 @@ function! s:CreateComponent(vueFile)
 
     for theFile in fileList
         if filereadable(theFile)
-            echoerr theFile . 'does exist!'
+            echoerr theFile . ' does exist!'
             return
         endif
     endfor
