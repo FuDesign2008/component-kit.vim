@@ -123,7 +123,7 @@ endfunction
 
 " @return {String}
 function! s:findTemplateDir()
-    if exists('g:vue_component_template_dir') && g:vue_component_template_dir
+    if exists('g:vue_component_template_dir')
         if g:vue_component_template_dir ==# 'built-in'
             let scriptPath = expand('<sfile>:p')
             return scriptPath . '/' . 'templates'
