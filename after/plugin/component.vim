@@ -181,7 +181,6 @@ endfunction
 function! s:LayoutCurrentComponent()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
-    let lower = tolower(extension)
 
     let vueFile = ''
 
@@ -207,7 +206,6 @@ endfunction
 function! s:LayoutVueAndScript()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
-    let lower = tolower(extension)
 
     let vueFile = ''
 
@@ -253,7 +251,6 @@ endfunction
 function! s:SwitchCurrentComponent()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
-    let lower = tolower(extension)
 
     let vueFile = ''
     let targetType = ''
