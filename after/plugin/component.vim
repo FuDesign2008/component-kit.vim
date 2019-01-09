@@ -51,25 +51,14 @@ if index(s:supportCssExtensionList, s:cssExtension) == -1
 endif
 
 
-function! s:CreateAndSaveFile(filePath, templateDir)
+function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNameCamel)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
 
     execute ':enew'
     if strlen(templateFilePath) > 0
         execute ':e ' . templateFilePath
-
-        let extension = fnamemodify(a:filePath, ':e')
-        let vueExtentions = ['vue', 'wpy']
-        let isVue = index(vueExtentions, extension) > -1
-        if isVue
-            let componentName = fnamemodify(a:filePath, ':t:r')
-            let componentNameCamel = substitute(componentName, '\C[A-Z]',
-                \ '\= "-" . tolower(submatch(0))',
-                \ 'g')
-            let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
-            execute ':%s/ComponentName/' . componentName . '/g'
-            execute ':%s/component-name/' . componentNameCamel . '/g'
-        endif
+        execute ':%s/ComponentName/' . a:componentName . '/g'
+        execute ':%s/component-name/' . a:componentNameCamel . '/g'
     endif
     execute ':saveas ' . a:filePath
     execute ':quit'
@@ -191,8 +180,14 @@ function! s:CreateComponent(vueFile)
 
     let templateDir = s:findTemplateDir()
 
+    let componentName = fnamemodify(a:vueFile, ':t:r')
+    let componentNameCamel = substitute(componentName, '\C[A-Z]',
+        \ '\= "-" . tolower(submatch(0))',
+        \ 'g')
+    let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
+
     for theFile in fileList
-        call s:CreateAndSaveFile(theFile, templateDir)
+        call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel)
     endfor
 
     call s:LayoutComponent(a:vueFile, 1)

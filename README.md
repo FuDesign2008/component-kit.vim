@@ -10,7 +10,7 @@ Tools for vue-like component
 1. `g:vue_component_template_dir`: The template directory for creating component ( @see `:VueCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on.
     - If `g:vue_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin
     - If `g:vue_component_template_dir` is not set, the plugin will find `.vue-component-template` directory up util home (`~`)
-    - The word `ComponentName`/`component-name` in `.vue`/`.wpy` file will be replaced by true component name
+    - The word `ComponentName`/`component-name` in template files will be replaced by true component name
 
 ## Commands
 
