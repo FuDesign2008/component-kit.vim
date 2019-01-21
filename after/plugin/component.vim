@@ -224,14 +224,14 @@ function! s:LayoutComponent(vueFile, includeCss)
     if strlen(scriptFile) > 0
         execute ':new ' . scriptFile
         execute ':only'
-        if a:includeCss == 1 && strlen(cssFile) > 0
+        if a:includeCss && strlen(cssFile) > 0
             execute ':vnew ' . cssFile
             execute ':new ' . a:vueFile
         else
             execute ':vnew ' . a:vueFile
         endif
     else
-        if a:includeCss == 1 && strlen(cssFile) > 0
+        if a:includeCss && strlen(cssFile) > 0
             execute ':new ' . cssFile
             execute ':only'
             execute ':vnew ' . a:vueFile
