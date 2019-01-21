@@ -50,3 +50,7 @@ This toolkit supports vue-like component:
 
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
+
+## Next
+
+1. call layout automatically when opening `*.vue`/`*.wpy` file
