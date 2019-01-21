@@ -220,26 +220,25 @@ endfunction
 function! s:LayoutComponent(vueFile, includeCss)
     let scriptFile = s:findScriptFile(a:vueFile)
     let cssFile = s:findCssFile(a:vueFile)
-    let fileList = [a:vueFile, scriptFile]
 
-    if a:includeCss
-        call add(fileList, cssFile)
-    endif
-
-    for theFile in fileList
-        if !filereadable(theFile)
-            echoerr  theFile . ' is not readable'
-            return
+    if strlen(scriptFile) > 0
+        execute ':new ' . scriptFile
+        execute ':only'
+        if a:includeCss == 1 && strlen(cssFile) > 0
+            execute ':vnew ' . cssFile
+            execute ':new ' . a:vueFile
+        else
+            execute ':vnew ' . a:vueFile
         endif
-    endfor
-
-    execute ':new ' . scriptFile
-    execute ':only'
-    if a:includeCss
-        execute ':vnew ' . cssFile
-        execute ':new ' . a:vueFile
     else
-        execute ':vnew ' . a:vueFile
+        if a:includeCss == 1 && strlen(cssFile) > 0
+            execute ':new ' . cssFile
+            execute ':only'
+            execute ':vnew ' . a:vueFile
+        else
+            execute ':new ' . a:vueFile
+            execute ':only'
+        endif
     endif
 endfunction
 
