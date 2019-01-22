@@ -228,21 +228,21 @@ function! s:LayoutComponent(vueFile, includeCss)
     let cssFile = s:findCssFile(a:vueFile)
 
     if strlen(scriptFile) > 0
-        execute ':new ' . scriptFile
+        execute ':new ++fileformat ' . scriptFile
         execute ':only'
         if a:includeCss && strlen(cssFile) > 0
-            execute ':vnew ' . cssFile
-            execute ':new ' . a:vueFile
+            execute ':vnew ++fileformat ' . cssFile
+            execute ':new ++fileformat ' . a:vueFile
         else
-            execute ':vnew ' . a:vueFile
+            execute ':vnew ++fileformat ' . a:vueFile
         endif
     else
         if a:includeCss && strlen(cssFile) > 0
-            execute ':new ' . cssFile
+            execute ':new ++fileformat ' . cssFile
             execute ':only'
-            execute ':vnew ' . a:vueFile
+            execute ':vnew ++fileformat ' . a:vueFile
         else
-            execute ':new ' . a:vueFile
+            execute ':new ++fileformat ' . a:vueFile
             execute ':only'
         endif
     endif
