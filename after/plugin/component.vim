@@ -253,6 +253,7 @@ function! s:LayoutComponent(vueFile, includeCss)
             let filetype = s:getFileType(cssFile)
             execute ':set filetype=' . filetype
             execute ':new ' . a:vueFile
+            " The last file do NOT need set filetype
             " let filetype = s:getFileType(a:vueFile)
             " execute ':set filetype=' . filetype
         else
