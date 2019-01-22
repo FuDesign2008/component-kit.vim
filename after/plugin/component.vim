@@ -25,6 +25,8 @@ let s:middleName = 'comp'
 let s:scriptExtension = 'js'
 let s:cssExtension = 'css'
 
+let s:autoLayout = 0
+
 " only use when finding component files
 "
 " wpy is used for https://github.com/Tencent/wepy
@@ -42,6 +44,10 @@ endif
 
 if exists('g:vue_component_css_extension') && strlen(g:vue_component_css_extension) > 0
     let s:cssExtension = g:vue_component_css_extension
+endif
+
+if exists('g:vue_component_auto_layout')
+    let s:autoLayout = g:vue_component_auto_layout
 endif
 
 if index(s:supportScriptExtensionList, s:scriptExtension) == -1
@@ -254,6 +260,9 @@ endfunction
 
 
 function! s:LayoutCurrentComponent()
+    if &diff
+        return
+    endif
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
 
@@ -279,6 +288,9 @@ function! s:LayoutCurrentComponent()
 endfunction
 
 function! s:LayoutVueAndScript()
+    if &diff
+        return
+    endif
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
 
@@ -356,6 +368,35 @@ command! -nargs=1 -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
+
+function! s:LayoutOnce(isVueLay)
+    if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
+        return
+    endif
+    let b:vue_component_layout_ing = 1
+    try
+        if a:isVueLay
+            call s:LayoutVueAndScript()
+        else
+            call s:LayoutCurrentComponent()
+        endif
+    finally
+        let b:vue_component_layout_ing = 0
+    endtry
+endfunction
+
+
+if s:autoLayout == 1
+    augroup vuecomponent
+        autocmd!
+        autocmd BufReadPost *.vue,*.wpy  call s:LayoutOnce(1)
+    augroup END
+elseif s:autoLayout == 2
+    augroup vuecomponent
+        autocmd!
+        autocmd BufReadPost *.vue,*.wpy call s:LayoutOnce(0)
+    augroup END
+endif
 
 let &cpoptions = s:save_cpo
 
