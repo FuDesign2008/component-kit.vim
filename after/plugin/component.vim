@@ -15,6 +15,7 @@ if exists('s:vue_component')
 endif
 
 let s:scriptDir= expand('<sfile>:p:h')
+let s:isDiffMode = &diff
 
 let s:vue_component = 1
 
@@ -291,7 +292,7 @@ endfunction
 
 
 function! s:LayoutCurrentComponent()
-    if &diff
+    if &diff || s:isDiffMode
         return
     endif
     let file = expand('%')
@@ -319,7 +320,7 @@ function! s:LayoutCurrentComponent()
 endfunction
 
 function! s:LayoutVueAndScript()
-    if &diff
+    if &diff || s:isDiffMode
         return
     endif
     let file = expand('%')
