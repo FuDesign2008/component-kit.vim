@@ -209,7 +209,7 @@ function! s:findScriptFile(vueFile)
             return theFile
         endif
     endfor
-    return get(fileList, 0, '')
+    return ''
 endfunction
 
 function! s:findCssFile(vueFile)
@@ -219,7 +219,7 @@ function! s:findCssFile(vueFile)
             return theFile
         endif
     endfor
-    return get(fileList, 0, '')
+    return ''
 endfunction
 
 " @return {String}
