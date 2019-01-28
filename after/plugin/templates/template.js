@@ -35,7 +35,7 @@ export default {
   },
 
   methods: {
-    fetchData() {
+    async fetchData() {
       // TODO
     },
     // TODO
