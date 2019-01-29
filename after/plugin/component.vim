@@ -222,23 +222,6 @@ function! s:findCssFile(vueFile)
     return ''
 endfunction
 
-" @return {String}
-function! s:getFileType(file)
-    let extension = fnamemodify(a:file, ':e')
-    let map = {
-                \ 'js': 'javascript',
-                \ 'ts': 'typescript',
-                \ 'jsx': 'javascript',
-                \ 'json': 'json',
-                \ 'scss': 'scss',
-                \ 'css': 'css',
-                \ 'less': 'less',
-                \ 'vue': 'vue',
-                \ 'wpy': 'vue'
-                \}
-    let filetype = get(map, extension, '')
-    return filetype
-endfunction
 
 function! s:LayoutComponent(vueFile, includeCss)
     let scriptFile = s:findScriptFile(a:vueFile)
@@ -246,36 +229,21 @@ function! s:LayoutComponent(vueFile, includeCss)
 
     if strlen(scriptFile) > 0
         execute ':new ' . scriptFile
-        let filetype = s:getFileType(scriptFile)
-        execute ':set filetype=' . filetype
         execute ':only'
         if a:includeCss && strlen(cssFile) > 0
             execute ':vnew ' . cssFile
-            let filetype = s:getFileType(cssFile)
-            execute ':set filetype=' . filetype
             execute ':new ' . a:vueFile
-            " The last file do NOT need set filetype
-            " let filetype = s:getFileType(a:vueFile)
-            " execute ':set filetype=' . filetype
         else
             execute ':vnew ' . a:vueFile
-            " let filetype = s:getFileType(a:vueFile)
-            " execute ':set filetype=' . filetype
         endif
     else
         if a:includeCss && strlen(cssFile) > 0
             execute ':new ' . cssFile
             execute ':only'
-            let filetype = s:getFileType(cssFile)
-            execute ':set filetype=' . filetype
             execute ':vnew ' . a:vueFile
-            " let filetype = s:getFileType(a:vueFile)
-            " execute ':set filetype=' . filetype
         else
             execute ':new ' . a:vueFile
             execute ':only'
-            " let filetype = s:getFileType(a:vueFile)
-            " execute ':set filetype=' . filetype
         endif
     endif
 endfunction
@@ -408,9 +376,9 @@ function! s:LayoutOnce(isVueLay)
     let b:vue_component_layout_ing = 1
     try
         if a:isVueLay
-            call s:LayoutVueAndScript()
+            execute ':VueLay'
         else
-            call s:LayoutCurrentComponent()
+            execute ':VueLayout'
         endif
     finally
         let b:vue_component_layout_ing = 0
@@ -421,12 +389,14 @@ endfunction
 if s:autoLayout == 1
     augroup vuecomponent
         autocmd!
-        autocmd BufWinEnter *.vue,*.wpy  call s:LayoutOnce(1)
+        " autocmd BufWinEnter *.vue,*.wpy  call s:LayoutOnce(1)
+        autocmd BufWinEnter *.vue,*.wpy  :VueLay
     augroup END
 elseif s:autoLayout == 2
     augroup vuecomponent
         autocmd!
-        autocmd BufWinEnter *.vue,*.wpy call s:LayoutOnce(0)
+        " autocmd BufWinEnter *.vue,*.wpy call s:LayoutOnce(0)
+        autocmd BufWinEnter *.vue,*.wpy :VueLayout
     augroup END
 endif
 
