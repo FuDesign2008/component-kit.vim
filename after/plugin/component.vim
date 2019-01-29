@@ -369,34 +369,34 @@ command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
 
-function! s:LayoutOnce(isVueLay)
+
+function! VueLayoutOnce(timer)
     if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
         return
     endif
+
     let b:vue_component_layout_ing = 1
-    try
-        if a:isVueLay
-            execute ':VueLay'
-        else
-            execute ':VueLayout'
-        endif
-    finally
-        let b:vue_component_layout_ing = 0
-    endtry
+    let time = 1500
+
+    if s:autoLayout == 1
+        execute ':VueLay'
+        call timer_start(time, 'VueEndLayoutOnce')
+    elseif s:autoLayout == 2
+        execute ':VueLayout'
+        call timer_start(time, 'VueEndLayoutOnce')
+    endif
 endfunction
 
+function! VueEndLayoutOnce(timer)
+    if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
+        let b:vue_component_layout_ing = 0
+    endif
+endfunction
 
-if s:autoLayout == 1
+if exists('*timer_start')
     augroup vuecomponent
         autocmd!
-        " autocmd BufWinEnter *.vue,*.wpy  call s:LayoutOnce(1)
-        autocmd BufWinEnter *.vue,*.wpy  :VueLay
-    augroup END
-elseif s:autoLayout == 2
-    augroup vuecomponent
-        autocmd!
-        " autocmd BufWinEnter *.vue,*.wpy call s:LayoutOnce(0)
-        autocmd BufWinEnter *.vue,*.wpy :VueLayout
+        autocmd BufWinEnter *.vue,*.wpy  call timer_start(100, 'VueLayoutOnce')
     augroup END
 endif
 

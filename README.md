@@ -11,7 +11,7 @@ Tools for vue-like component
     - If `g:vue_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin
     - If `g:vue_component_template_dir` is not set, the plugin will find `.vue-component-template` directory up util home (`~`)
     - The word `ComponentName`/`component-name` in template files will be replaced by true component name
-1. `g:vue_component_auto_layout`: Call `:VueLay` / `:VueLayout` automatically when opening `*.vue`/`*.wpy` files
+1. `g:vue_component_auto_layout`: Call `:VueLay` / `:VueLayout` automatically when opening `*.vue`/`*.wpy` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
     - If the value is `0`, no command will be called
     - If the value is `1`, command `:VueLay` will be called
     - If the value is `2`, command `:VueLayout` will be called
