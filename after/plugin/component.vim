@@ -369,8 +369,21 @@ command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
 
+function! s:isQuickFixOpened()
+    for index in range(1, winnr('$'))
+        let bnum = winbufnr(index)
+        if getbufvar(bnum, '&buftype') ==# 'quickfix'
+            return 1
+        endif
+    endfor
+    return 0
+endfunction
 
 function! VueLayoutOnce(timer)
+    let isOpen =  s:isQuickFixOpened()
+    if isOpen
+        return
+    endif
     if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
         return
     endif
