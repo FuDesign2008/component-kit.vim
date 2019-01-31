@@ -224,6 +224,13 @@ endfunction
 
 
 function! s:LayoutComponent(vueFile, includeCss)
+    if exists('*timer_start')
+       if  exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
+            return
+        endif
+        let b:vue_component_layout_ing = 1
+    endif
+
     let scriptFile = s:findScriptFile(a:vueFile)
     let cssFile = s:findCssFile(a:vueFile)
 
@@ -245,6 +252,10 @@ function! s:LayoutComponent(vueFile, includeCss)
             execute ':new ' . a:vueFile
             execute ':only'
         endif
+    endif
+
+    if exists('*timer_start')
+        call timer_start(1500, 'VueLayoutComponentEnd')
     endif
 endfunction
 
@@ -379,28 +390,20 @@ function! s:isQuickFixOpened()
     return 0
 endfunction
 
-function! VueLayoutOnce(timer)
+function! VueLayoutAuto(timer)
     let isOpen =  s:isQuickFixOpened()
     if isOpen
         return
     endif
-    if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
-        return
-    endif
-
-    let b:vue_component_layout_ing = 1
-    let time = 1500
 
     if s:autoLayout == 1
         execute ':VueLay'
-        call timer_start(time, 'VueEndLayoutOnce')
     elseif s:autoLayout == 2
         execute ':VueLayout'
-        call timer_start(time, 'VueEndLayoutOnce')
     endif
 endfunction
 
-function! VueEndLayoutOnce(timer)
+function! VueLayoutComponentEnd(timer)
     if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
         let b:vue_component_layout_ing = 0
     endif
@@ -409,7 +412,7 @@ endfunction
 if exists('*timer_start')
     augroup vuecomponent
         autocmd!
-        autocmd BufWinEnter *.vue,*.wpy  call timer_start(100, 'VueLayoutOnce')
+        autocmd BufReadPost *.vue,*.wpy  call timer_start(100, 'VueLayoutAuto')
     augroup END
 endif
 
