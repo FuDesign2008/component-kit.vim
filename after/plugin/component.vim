@@ -28,6 +28,8 @@ let s:cssExtension = 'css'
 
 let s:autoLayout = 0
 
+let s:vue_component_layout_doing = 0
+
 " only use when finding component files
 "
 " wpy is used for https://github.com/Tencent/wepy
@@ -225,10 +227,10 @@ endfunction
 
 function! s:LayoutComponent(vueFile, includeCss)
     if exists('*timer_start')
-       if  exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
+       if s:vue_component_layout_doing
             return
         endif
-        let b:vue_component_layout_ing = 1
+        let s:vue_component_layout_doing = 1
     endif
 
     let scriptFile = s:findScriptFile(a:vueFile)
@@ -255,7 +257,7 @@ function! s:LayoutComponent(vueFile, includeCss)
     endif
 
     if exists('*timer_start')
-        call timer_start(1500, 'VueLayoutComponentEnd')
+        call timer_start(1000, 'VueLayoutComponentEnd')
     endif
 endfunction
 
@@ -404,15 +406,22 @@ function! VueLayoutAuto(timer)
 endfunction
 
 function! VueLayoutComponentEnd(timer)
-    if exists('b:vue_component_layout_ing') && b:vue_component_layout_ing
-        let b:vue_component_layout_ing = 0
+    if s:vue_component_layout_doing
+        let s:vue_component_layout_doing = 0
     endif
+endfunction
+
+function! VueLayoutAutoWithDelay()
+    if s:vue_component_layout_doing
+        return
+    endif
+    call timer_start(10, 'VueLayoutAuto')
 endfunction
 
 if exists('*timer_start')
     augroup vuecomponent
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy  call timer_start(100, 'VueLayoutAuto')
+        autocmd BufReadPost *.vue,*.wpy  call VueLayoutAutoWithDelay()
     augroup END
 endif
 
