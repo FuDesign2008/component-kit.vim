@@ -377,10 +377,15 @@ function! s:SwitchCurrentComponent()
     endif
 endfunction
 
+function! s:ResetStatus()
+    let s:vue_component_layout_doing = 0
+endfunction
+
 command! -nargs=1 -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
+command! VueReset call s:ResetStatus()
 
 function! s:isQuickFixOpened()
     for index in range(1, winnr('$'))
@@ -406,9 +411,7 @@ function! VueLayoutAuto(timer)
 endfunction
 
 function! VueLayoutComponentEnd(timer)
-    if s:vue_component_layout_doing
-        let s:vue_component_layout_doing = 0
-    endif
+    call s:ResetStatus()
 endfunction
 
 function! VueLayoutAutoWithDelay()

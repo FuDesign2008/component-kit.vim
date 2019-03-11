@@ -24,6 +24,7 @@ Tools for vue-like component
 1. `VueLayout`: close all windows and layout all component files.
 1. `VueLay`: close all windows and layout vue and script files.
 1. `VueAlt`: switch vue -> css -> script -> vue ... file
+1. `VueReset`: reset the status of the plugin
 
 ```
 
