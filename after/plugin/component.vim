@@ -176,21 +176,24 @@ endfunction
 " @param {String} vueFile
 " @param {String} [scriptExtension]
 " @param {String} [styleExtension]
-function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
+" function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
+function! s:CreateComponent(...)
+    let argsCount = a:0
+    let vueFile = a:1
+
     let scriptExtension = s:scriptExtension
+    if argsCount >= 2 && strlen(a:2) > 1
+        let scriptExtension = a:2
+    endif
+
     let styleExtension =  s:styleExtension
-
-    if strlen(a:scriptExtension) > 1
-        let scriptExtension = a:scriptExtension
+    if argsCount >= 3 && strlen(a:3) > 1
+        let styleExtension = a:3
     endif
 
-    if strlen(a:styleExtension) > 1
-        let styleExtension = a:styleExtension
-    endif
-
-    let scriptFile = s:makeScriptFile(a:vueFile, scriptExtension)
-    let cssFile = s:makeCssFile(a:vueFile, styleExtension)
-    let fileList = [a:vueFile, scriptFile, cssFile]
+    let scriptFile = s:makeScriptFile(vueFile, scriptExtension)
+    let cssFile = s:makeCssFile(vueFile, styleExtension)
+    let fileList = [vueFile, scriptFile, cssFile]
 
     for theFile in fileList
         if filereadable(theFile)
@@ -199,14 +202,14 @@ function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
         endif
     endfor
 
-    let targetDir = fnamemodify(a:vueFile, ':p:h')
+    let targetDir = fnamemodify(vueFile, ':p:h')
     if !isdirectory(targetDir)
         call mkdir(targetDir, 'p')
     endif
 
     let templateDir = s:findTemplateDir()
 
-    let componentName = fnamemodify(a:vueFile, ':t:r')
+    let componentName = fnamemodify(vueFile, ':t:r')
     let componentNameCamel = substitute(componentName, '\C[A-Z]',
         \ '\= "-" . tolower(submatch(0))',
         \ 'g')
@@ -216,7 +219,7 @@ function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
         call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
     endfor
 
-    call s:LayoutComponent(a:vueFile, 1)
+    call s:LayoutComponent(vueFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
