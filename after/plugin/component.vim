@@ -24,7 +24,7 @@ let s:middleName = 'comp'
 
 " only use when creating component files
 let s:scriptExtension = 'js'
-let s:cssExtension = 'css'
+let s:styleExtension = 'css'
 
 let s:autoLayout = 0
 
@@ -46,7 +46,7 @@ if exists('g:vue_component_script_extension') && strlen(g:vue_component_script_e
 endif
 
 if exists('g:vue_component_css_extension') && strlen(g:vue_component_css_extension) > 0
-    let s:cssExtension = g:vue_component_css_extension
+    let s:styleExtension = g:vue_component_css_extension
 endif
 
 if exists('g:vue_component_auto_layout')
@@ -57,8 +57,8 @@ if index(s:supportScriptExtensionList, s:scriptExtension) == -1
     call add(s:supportScriptExtensionList, s:scriptExtension)
 endif
 
-if index(s:supportCssExtensionList, s:cssExtension) == -1
-    call add(s:supportCssExtensionList, s:cssExtension)
+if index(s:supportCssExtensionList, s:styleExtension) == -1
+    call add(s:supportCssExtensionList, s:styleExtension)
 endif
 
 " @return {String}
@@ -78,7 +78,7 @@ function! s:findTemplateFile(file, templateDir)
     return ''
 endfunction
 
-function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNameCamel)
+function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
 
     execute ':enew'
@@ -86,6 +86,8 @@ function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNam
         execute ':e ' . templateFilePath
         execute ':%s/ComponentName/' . a:componentName . '/ge'
         execute ':%s/component-name/' . a:componentNameCamel . '/ge'
+        execute ':%s/STYLE_EXTENSION/' . a:styleExtension . '/ge'
+        execute ':%s/SCRIPT_EXTENSION/' . a:scriptExtension . '/ge'
     endif
     execute ':saveas ' . a:filePath
     " execute ':quit'
@@ -95,7 +97,7 @@ endfunction
 function! s:makeCssFile(vueFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
-        let theExtension = s:cssExtension
+        let theExtension = s:styleExtension
     endif
     let cssFile = fnamemodify(a:vueFile, ':r') . '.' . s:middleName .'.' . theExtension
     return cssFile
@@ -171,9 +173,15 @@ function! s:findTemplateDir()
 endfunction
 
 
-function! s:CreateComponent(vueFile)
-    let scriptFile = s:makeScriptFile(a:vueFile, '')
-    let cssFile = s:makeCssFile(a:vueFile, '')
+" @param {String} vueFile
+" @param {String} [scriptExtension]
+" @param {String} [styleExtension]
+function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
+    let scriptExtension = a:scriptExtension || s:scriptExtension
+    let styleExtension = a:styleExtension || s:styleExtension
+
+    let scriptFile = s:makeScriptFile(a:vueFile, scriptExtension)
+    let cssFile = s:makeCssFile(a:vueFile, styleExtension)
     let fileList = [a:vueFile, scriptFile, cssFile]
 
     for theFile in fileList
@@ -197,7 +205,7 @@ function! s:CreateComponent(vueFile)
     let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
 
     for theFile in fileList
-        call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel)
+        call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
     endfor
 
     call s:LayoutComponent(a:vueFile, 1)
@@ -381,7 +389,7 @@ function! s:ResetStatus()
     let s:vue_component_layout_doing = 0
 endfunction
 
-command! -nargs=1 -complete=file VueCreate call s:CreateComponent(<f-args>)
+command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()

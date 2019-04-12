@@ -3,8 +3,7 @@
     <!-- // TODO -->
   </div>
 </template>
-<script src="./ComponentName.comp.js">
+<script src="./ComponentName.comp.SCRIPT_EXTENSION" lang="SCRIPT_EXTENSION">
 </script>
-<style lang="scss" src="./ComponentName.comp.scss" scoped>
-
+<style src="./ComponentName.comp.STYLE_EXTENSION" lang="STYLE_EXTENSION"  scoped>
 </style>
