@@ -177,8 +177,16 @@ endfunction
 " @param {String} [scriptExtension]
 " @param {String} [styleExtension]
 function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
-    let scriptExtension = a:scriptExtension || s:scriptExtension
-    let styleExtension = a:styleExtension || s:styleExtension
+    let scriptExtension = s:scriptExtension
+    let styleExtension =  s:styleExtension
+
+    if strlen(a:scriptExtension) > 1
+        let scriptExtension = a:scriptExtension
+    endif
+
+    if strlen(a:styleExtension) > 1
+        let styleExtension = a:styleExtension
+    endif
 
     let scriptFile = s:makeScriptFile(a:vueFile, scriptExtension)
     let cssFile = s:makeCssFile(a:vueFile, styleExtension)
