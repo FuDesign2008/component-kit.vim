@@ -270,8 +270,9 @@ function! s:LayoutComponent(vueFile, includeCss)
             execute ':only'
             execute ':vnew ' . a:vueFile
         else
-            execute ':new ' . a:vueFile
-            execute ':only'
+            echomsg 'There is no script/style file'
+            " execute ':new ' . a:vueFile
+            " execute ':only'
         endif
     endif
 
