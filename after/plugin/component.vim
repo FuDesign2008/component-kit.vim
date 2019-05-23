@@ -448,7 +448,7 @@ endfunction
 function! s:ComposeFilePath(filePath, componentName, newComponentName)
     let path = fnamemodify(a:filePath, ':p:h')
     let fileName = fnamemodify(a:filePath, ':t')
-    let newFileName = substitute(fileName, a:componentName, a:newComponentName)
+    let newFileName = substitute(fileName, a:componentName, a:newComponentName, 'g')
     let newFilePath = path . '/' . newFileName
     return newFilePath
 endfunction
@@ -833,14 +833,7 @@ function! s:NodeToHtml(node, originalHtml)
     endif
 
     let innerContent = get(a:node, 'innerContent', '')
-    let trimedInner = substitute(innerContent, '\\n', '', 'g')
-    let trimedInner = trim(trimedInner)
-
-    if strlen(trimedInner) > 0
-        let html = '<' . tagname  . attrHtml . '>' . innerContent . '</'. tagname .'>'
-    else
-        let html = '<' . tagname  . attrHtml . '/>'
-    endif
+    let html = '<' . tagname  . attrHtml . '>' . innerContent . '</'. tagname .'>'
 
     return html
 endfunction
