@@ -861,26 +861,43 @@ function! s:ParseNode(tagname, html, startToken, endToken)
     let startTokenLen = strlen(a:startToken)
     let startTokenIndex = stridx(a:html, a:startToken, 0)
     " echomsg 'startTokenIndex: ' .startTokenIndex
-    let startIndex = startTokenIndex + startTokenLen
-    let endIndex = -1
 
-    if a:endToken == s:generalEndToken
-        let endIndex = stridx(a:html, a:endToken, startIndex)
+    let htmlWithAttrs = ''
+
+     " <tagname>xxx</tagname>
+    if stridx(a:startToken, '>') > -1
+        let htmlWithAttrs = ''
+        let needleStart = startTokenIndex + startTokenLen
+        let endTokenIndex = stridx(a:html, a:endToken, needleStart)
+        if endTokenIndex > -1
+            let innerContentLength = endTokenIndex - needleStart
+            let innerContent = strpart(a:html, needleStart, innerContentLength)
+            let node['innerContent'] = innerContent
+        endif
     else
-        let endMark = '>'
-        let endIndex = stridx(a:html, endMark, startIndex)
-        if endIndex > -1
-            let needleStart = endIndex + strlen(endMark)
-            let endTokenIndex = stridx(a:html, a:endToken, needleStart)
-            if endTokenIndex > -1
-                let innerContentLength = endTokenIndex - needleStart
-                let innerContent = strpart(a:html, needleStart, innerContentLength)
-                let node['innerContent'] = innerContent
+        let attrStartIndex = startTokenIndex + startTokenLen
+        let attrEndIndex = -1
+        " <tagname abc />
+        if a:endToken == s:generalEndToken
+            let endTokenIndex = stridx(a:html, a:endToken, attrStartIndex)
+        else
+            " <tagname abc > xxxx </tagname>
+            let endMark = '>'
+            let attrEndIndex = stridx(a:html, endMark, attrStartIndex)
+            if attrEndIndex > -1
+                let needleStart = attrEndIndex + strlen(endMark)
+                let endTokenIndex = stridx(a:html, a:endToken, needleStart)
+                if endTokenIndex > -1
+                    let innerContentLength = endTokenIndex - needleStart
+                    let innerContent = strpart(a:html, needleStart, innerContentLength)
+                    let node['innerContent'] = innerContent
+                endif
             endif
         endif
+
+        let htmlWithAttrs = strpart(a:html, attrStartIndex, attrEndIndex - attrStartIndex)
     endif
 
-    let htmlWithAttrs = strpart(a:html, startIndex, endIndex - startIndex)
     let attrNodeList = s:ParseAttributes(htmlWithAttrs)
 
     if !empty(attrNodeList)
@@ -907,6 +924,7 @@ endfunction
 " @return {Array<Node>}
 function! s:ParseTag(tagname, html)
     let startToken = '<' . a:tagname
+    let startTokenWithClose = startToken . '>'
     let startTokenWithSpace = startToken . ' '
     let startTokenWithEndLine  = startToken . '\n'
     let realStartToken = ''
@@ -918,9 +936,15 @@ function! s:ParseTag(tagname, html)
     let nodeList = []
 
     while needleIndex < len
-        let startIndex = stridx(a:html, startTokenWithSpace, needleIndex)
-        " echomsg 'startTokenWithSpace: ' . startTokenWithSpace
-        let realStartToken = startTokenWithSpace
+        let startIndex = stridx(a:html, startTokenWithClose, needleIndex)
+        let realStartToken = startTokenWithClose
+
+        if startIndex == -1
+            let startIndex = stridx(a:html, startTokenWithSpace, needleIndex)
+            " echomsg 'startTokenWithSpace: ' . startTokenWithSpace
+            let realStartToken = startTokenWithSpace
+        endif
+
         if startIndex == -1
             " echomsg 'startTokenWithEndLine: ' .startTokenWithEndLine
             let startIndex = stridx(a:html, startTokenWithEndLine, needleIndex)
