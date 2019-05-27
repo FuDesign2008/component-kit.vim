@@ -587,9 +587,18 @@ function! s:UpdateHtml(filePath, srcPart, srcPartNew, tagInfoList)
                 if newSrcValue !=# srcValue
                     let srcNode['value'] = newSrcValue
                     let langNode = s:FindAttributeNode(attrNodeList, 'lang')
-                    if has_key(langDict, nodeTagName) && !empty(langNode)
-                        let lang = get(langDict, nodeTagName, '')
-                        let langNode['value'] = lang
+                    let lang = get(langDict, nodeTagName, '')
+                    if has_key(langDict, nodeTagName)
+                        if empty(langNode)
+                            let newLangNode = {
+                                \ 'name': 'lang',
+                                \ 'value': lang,
+                                \}
+
+                            call add(attrNodeList, newLangNode)
+                        else
+                            let langNode['value'] = lang
+                        endif
                     endif
                     let node['isModified'] = 1
                 endif
