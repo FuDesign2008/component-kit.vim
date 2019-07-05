@@ -24,9 +24,14 @@ Tools for vue-like component
     - `VueCreate Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files
     - `VueCreate Example.vue ts` will create `Example.vue`, 'Example.comp.ts', `Example.comp.css` files
     - `VueCreate Example.vue ts scss` will create `Example.vue`, 'Example.comp.ts', `Example.comp.scss` files
+1. `VueCreateFolder`: like `VueCreate`, create all files under a folder
+    - `VueCreate Example.vue` will create`Example/index.js`, `Example/Example.vue`, `Example/Example.comp.js`, `Example/Example.comp.css` files
+    - `VueCreate Example.wpy` will create `Example/index.js`, `Example/Example.wpy`, `Example/Example.comp.js`, `Example/Example.comp.css` files
+    - `VueCreate Example.vue ts` will create `Example/index.ts`, `Example/Example.vue`, 'Example/Example.comp.ts', `Example/Example.comp.css` files
+    - `VueCreate Example.vue ts scss` will create `Example/index.ts`, `Example/Example.vue`, 'Example/Example.comp.ts', `Example/Example.comp.scss` files
 1. `VueLayout`: close all windows and layout all component files.
 1. `VueLay`: close all windows and layout vue and script files.
-1. `VueAlt`: switch vue -> style -> script -> vue ... file
+1. `VueAlt`: switch index -> vue -> style -> script -> index -> vue ... file
 1. `VueReset`: reset the status of the plugin
 1. `VueRename`: rename all files of a vue component, and change style/script file path in template file
     - `VueRename NewName` will rename vue/style/script file to `NewName.vue`, `NewName.comp.css`, `NewName.comp.js`
@@ -43,8 +48,20 @@ Tools for vue-like component
 |       |       |
 -----------------
 
- // :VueLay
+ // :VueLayout
+-----------------
+| .vue  |       |
+|       |       |
+|-------|  .js  |
+| .css  |       |
+|       |       |
+|-------|       |
+| index |       |
+|       |       |
+-----------------
 
+
+ // :VueLay
 -----------------
 |       |       |
 |       |       |
@@ -52,6 +69,18 @@ Tools for vue-like component
 |       |       |
 |       |       |
 -----------------
+
+ // :VueLay
+-----------------
+|       |       |
+| .vue  |       |
+|       |       |
+|-------| .js   |
+|       |       |
+| index |       |
+|       |       |
+-----------------
+
 
 ```
 
@@ -61,7 +90,3 @@ This toolkit supports vue-like component:
 
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
-
-## Next
-
-1. call layout automatically when opening `*.vue`/`*.wpy` file
