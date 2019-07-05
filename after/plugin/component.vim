@@ -1314,6 +1314,7 @@ if exists('*timer_start')
     augroup vuecomponent
         autocmd!
         autocmd BufReadPost *.vue,*.wpy  call VueLayoutAutoWithDelay()
+        autocmd BufReadPost index.ts,index.js  call VueLayoutAutoWithDelay()
     augroup END
 endif
 
