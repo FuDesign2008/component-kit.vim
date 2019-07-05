@@ -103,26 +103,87 @@ function! s:findTemplateFile(file, templateDir)
     return ''
 endfunction
 
+" @return {string|0}
+function! s:ReadFile(filePath)
+    if !empty(a:filePath) && filereadable(a:filePath)
+        let lines = readfile(a:filePath)
+        let text = join(lines, s:lineJoinSplitter)
+        return text
+    endif
+
+    return 0
+endfunction
+
+" @return {0|1}
+function! s:WriteFile(text, filePath)
+    if !empty(a:filePath) && filewritable(a:filePath)
+        let lines = split(a:text, s:lineSplitPattern)
+        call writefile(lines, a:filePath, 's')
+        return 1
+    endif
+
+    return 0
+endfunction
+
+" @return {0|1}
 function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
+    let templateText = s:ReadFile(templateFilePath)
 
-    let lines = []
+    let content = ''
 
-    if !empty(templateFilePath) && filereadable(templateFilePath)
-        let templateLines = readfile(templateFilePath)
-        let templateText = join(templateLines, s:lineJoinSplitter)
-
+    if templateText != 0
         let newText = templateText
         let newText = substitute(newText, 'ComponentName', a:componentName  , 'g')
         let newText = substitute(newText, 'component-name', a:componentNameCamel  , 'g')
         let newText = substitute(newText, 'VUE_EXTENSION', a:vueExtension  , 'g')
         let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension  , 'g')
         let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension  , 'g')
-
-        let lines = split(newText, s:lineSplitPattern)
+        let content = newText
     endif
 
-    call writefile(lines, a:filePath, 's')
+    let writeOk = s:WriteFile(content, a:filePath)
+    return writeOk
+endfunction
+
+"@return {0|1}
+function! s:UpdateClassName(filePath, componentName, componentNameNew)
+    let originalText = s:ReadFile(a:filePath)
+    if originalText == 0
+        echoerr 'Failed to read file: ' . a:filePath
+        return 0
+    endif
+
+    let className = s:Camelize(a:componentName)
+    let classNameNew = s:Camelize(a:componentNameNew)
+    let newText = substitute(originalText, className, classNameNew  , 'g')
+
+    let writeOk = s:WriteFile(newText, a:filePath)
+    return writeOk
+endfunction
+
+" @return {0|1}
+function! s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+    for theFile in a:fileList
+        if filereadable(theFile)
+            echoerr theFile . ' does exist!'
+            return 0
+        endif
+    endfor
+
+    let targetDir = fnamemodify(a:vueFile, ':p:h')
+    if !isdirectory(targetDir)
+        call mkdir(targetDir, 'p')
+    endif
+
+    let templateDir = s:FindTemplateDir()
+    let componentName = s:GetComponentName(a:vueFile)
+    let componentNameCamel = s:Camelize(componentName)
+
+    for theFile in a:fileList
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, a:scriptExtension, a:styleExtension, a:vueExtension)
+    endfor
+    return 1
 endfunction
 
 
@@ -238,6 +299,13 @@ function! s:CompleteExtension(vueFile)
     endif
 endfunction
 
+function! s:Camelize(str)
+    let camelized = substitute(a:str, '\C[A-Z]',
+        \ '\= "-" . tolower(submatch(0))',
+        \ 'g')
+    let camelized = substitute(camelized, '^-', '', '')
+    return camelized
+endfunction
 
 " @param {String} vueFile
 " @param {String} [scriptExtension]
@@ -262,29 +330,10 @@ function! s:CreateComponent(...)
     let cssFile = s:MakeCssFile(vueFile, styleExtension)
     let fileList = [vueFile, scriptFile, cssFile]
 
-    for theFile in fileList
-        if filereadable(theFile)
-            echoerr theFile . ' does exist!'
-            return
-        endif
-    endfor
-
-    let targetDir = fnamemodify(vueFile, ':p:h')
-    if !isdirectory(targetDir)
-        call mkdir(targetDir, 'p')
+    let isCreateOk = s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+    if !isCreateOk
+        return
     endif
-
-    let templateDir = s:FindTemplateDir()
-
-    let componentName = s:GetComponentName(vueFile)
-    let componentNameCamel = substitute(componentName, '\C[A-Z]',
-        \ '\= "-" . tolower(submatch(0))',
-        \ 'g')
-    let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
-
-    for theFile in fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
-    endfor
 
     call s:LayoutComponent(vueFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
@@ -317,29 +366,10 @@ function! s:CreateComponentWithFolder(...)
     let indexFile = s:MakeIndexFile(vueFile, scriptExtension)
     let fileList = [indexFile, vueFile, scriptFile, cssFile]
 
-    for theFile in fileList
-        if filereadable(theFile)
-            echoerr theFile . ' does exist!'
-            return
-        endif
-    endfor
-
-    let targetDir = fnamemodify(vueFile, ':p:h')
-    if !isdirectory(targetDir)
-        call mkdir(targetDir, 'p')
+    let isCreateOk =   s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+    if !isCreateOk
+        return
     endif
-
-    let templateDir = s:FindTemplateDir()
-
-    let componentName = s:GetComponentName(vueFile)
-    let componentNameCamel = substitute(componentName, '\C[A-Z]',
-        \ '\= "-" . tolower(submatch(0))',
-        \ 'g')
-    let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
-
-    for theFile in fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
-    endfor
 
     call s:LayoutComponent(vueFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
@@ -644,14 +674,19 @@ function s:Rename3Files(vueFile, newComponentName, bang)
     let vueFileNew = s:ComposeFilePath(a:vueFile, componentName, a:newComponentName)
     let isRenameOk = s:RenameFile(a:vueFile, vueFileNew, a:bang)
 
-    if isRenameOk == 0
+    if isRenameOk
+        call s:UpdateClassName(vueFileNew, componentName, a:newComponentName)
+    else
         return ''
     endif
 
     let styleFile = s:FindStyleFile(a:vueFile)
     if strlen(styleFile) > 0
         let styleFileNew = s:ComposeFilePath(styleFile, componentName, a:newComponentName)
-        call s:RenameFile(styleFile, styleFileNew, a:bang)
+        let isRenameOk = s:RenameFile(styleFile, styleFileNew, a:bang)
+        if isRenameOk
+            call s:UpdateClassName(styleFileNew, componentName, a:newComponentName)
+        endif
     endif
 
     let scriptFile = s:FindScriptFile(a:vueFile)
@@ -686,20 +721,17 @@ function s:UpdateIndexFile(vueFile, componentName, newComponentName, bang)
         echoerr 'Failed to find index file.'
         return 0
     endif
-    if filereadable(indexFile) == 0
-        echoerr 'File is not readable: ' . indexFile
-        return 0
+
+    let originalText = s:ReadFile(indexFile)
+    if originalText == 0
+        echoerr 'Failed to read file: ' . indexFile
+        return
     endif
 
-    let lineList = readfile(indexFile)
-    let originText = join(lineList, s:lineJoinSplitter)
-    let newText = substitute(originText, a:componentName, a:newComponentName, 'g')
-    let newLineList = split(newText, s:lineSplitPattern)
-    if !empty(newLineList)
-        call writefile(newLineList, indexFile, 's')
-        return 1
-    endif
-    return 0
+    let newText = substitute(originalText, a:componentName, a:newComponentName, 'g')
+
+    let writeOk = s:WriteFile(newText, indexFile)
+    return writeOk
 endfunction
 
 function! s:RenameComponentWithFolder(vueFile, newComponentName, bang)
