@@ -1,4 +1,4 @@
 
-import ComponentName from './ComponentName.EXTENSION'
+import ComponentName from './ComponentName.VUE_EXTENSION'
 
 export { ComponentName }

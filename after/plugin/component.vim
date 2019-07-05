@@ -88,7 +88,7 @@ function! s:findTemplateFile(file, templateDir)
     let extension = fnamemodify(a:file, ':e')
     let isIndexFile = s:IsIndexFile(a:file)
 
-    if isIndexFile > -1
+    if isIndexFile
         let templateFileName = 'index.' . extension
         let templateFile = a:templateDir . '/' . templateFileName
     else
@@ -103,19 +103,26 @@ function! s:findTemplateFile(file, templateDir)
     return ''
 endfunction
 
-function! s:CreateAndSaveFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
+function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
 
-    execute ':enew'
-    if strlen(templateFilePath) > 0
-        execute ':e ' . templateFilePath
-        execute ':%s/ComponentName/' . a:componentName . '/ge'
-        execute ':%s/component-name/' . a:componentNameCamel . '/ge'
-        execute ':%s/STYLE_EXTENSION/' . a:styleExtension . '/ge'
-        execute ':%s/SCRIPT_EXTENSION/' . a:scriptExtension . '/ge'
+    let lines = []
+
+    if !empty(templateFilePath) && filereadable(templateFilePath)
+        let templateLines = readfile(templateFilePath)
+        let templateText = join(templateLines, s:lineJoinSplitter)
+
+        let newText = templateText
+        let newText = substitute(newText, 'ComponentName', a:componentName  , 'g')
+        let newText = substitute(newText, 'component-name', a:componentNameCamel  , 'g')
+        let newText = substitute(newText, 'VUE_EXTENSION', a:vueExtension  , 'g')
+        let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension  , 'g')
+        let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension  , 'g')
+
+        let lines = split(newText, s:lineSplitPattern)
     endif
-    execute ':saveas ' . a:filePath
-    " execute ':quit'
+
+    call writefile(lines, a:filePath, 's')
 endfunction
 
 
@@ -219,6 +226,18 @@ function! s:FindTemplateDir()
     return ''
 endfunction
 
+" @param {string} vueFile
+" @return {string}
+function! s:CompleteExtension(vueFile)
+    let extension = fnamemodify(a:vueFile, ':e')
+    let index = index(s:supportVueExtensionList, extension)
+    if index > -1
+        return a:vueFile
+    else
+        return a:vueFile  . '.vue'
+    endif
+endfunction
+
 
 " @param {String} vueFile
 " @param {String} [scriptExtension]
@@ -226,7 +245,8 @@ endfunction
 " function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
 function! s:CreateComponent(...)
     let argsCount = a:0
-    let vueFile = a:1
+    let vueFile = s:CompleteExtension(a:1)
+    let vueExtension = fnamemodify(vueFile, ':e')
 
     let scriptExtension = s:scriptExtension
     if argsCount >= 2 && strlen(a:2) > 1
@@ -263,7 +283,7 @@ function! s:CreateComponent(...)
     let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
 
     for theFile in fileList
-        call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
     endfor
 
     call s:LayoutComponent(vueFile, 1)
@@ -276,9 +296,11 @@ endfunction
 " function! s:CreateComponentWithFolder(vueFile, scriptExtension, styleExtension)
 function! s:CreateComponentWithFolder(...)
     let argsCount = a:0
-    let path = fnamemodify(a:1, ':p:r')
-    let vueFileName = fnamemodify(a:1, ':p:t')
+    let completed = s:CompleteExtension(a:1)
+    let path = fnamemodify(completed, ':p:r')
+    let vueFileName = fnamemodify(completed, ':p:t')
     let vueFile = path . '/' . vueFileName
+    let vueExtension = fnamemodify(vueFile, ':e')
 
     let scriptExtension = s:scriptExtension
     if argsCount >= 2 && strlen(a:2) > 1
@@ -316,7 +338,7 @@ function! s:CreateComponentWithFolder(...)
     let componentNameCamel = substitute(componentNameCamel, '^-', '', '')
 
     for theFile in fileList
-        call s:CreateAndSaveFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
     endfor
 
     call s:LayoutComponent(vueFile, 1)
@@ -344,7 +366,7 @@ function! s:FindStyleFile(vueFile)
 endfunction
 
 function! s:FindIndexFile(vueFile)
-    let fileList = s:MakeIndexFile(a:vueFile)
+    let fileList = s:MakeIndexFileList(a:vueFile)
     for theFile in fileList
         if filereadable(theFile)
             return theFile
