@@ -103,7 +103,7 @@ function! s:findTemplateFile(file, templateDir)
     return ''
 endfunction
 
-" @return {string|0}
+" @return {string}
 function! s:ReadFile(filePath)
     if !empty(a:filePath) && filereadable(a:filePath)
         let lines = readfile(a:filePath)
@@ -111,12 +111,12 @@ function! s:ReadFile(filePath)
         return text
     endif
 
-    return 0
+    return ''
 endfunction
 
 " @return {0|1}
 function! s:WriteFile(text, filePath)
-    if !empty(a:filePath) && filewritable(a:filePath)
+    if !empty(a:filePath)
         let lines = split(a:text, s:lineSplitPattern)
         call writefile(lines, a:filePath, 's')
         return 1
@@ -132,7 +132,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
 
     let content = ''
 
-    if templateText != 0
+    if strlen(templateText) > 0
         let newText = templateText
         let newText = substitute(newText, 'ComponentName', a:componentName  , 'g')
         let newText = substitute(newText, 'component-name', a:componentNameCamel  , 'g')
@@ -149,7 +149,7 @@ endfunction
 "@return {0|1}
 function! s:UpdateClassName(filePath, componentName, componentNameNew)
     let originalText = s:ReadFile(a:filePath)
-    if originalText == 0
+    if strlen(originalText) == 0
         echoerr 'Failed to read file: ' . a:filePath
         return 0
     endif
@@ -723,7 +723,7 @@ function s:UpdateIndexFile(vueFile, componentName, newComponentName, bang)
     endif
 
     let originalText = s:ReadFile(indexFile)
-    if originalText == 0
+    if strlen(originalText) == 0
         echoerr 'Failed to read file: ' . indexFile
         return
     endif
