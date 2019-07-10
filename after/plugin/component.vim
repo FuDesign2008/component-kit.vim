@@ -642,7 +642,24 @@ endfunction
 
 "return 0 or 1
 function! s:RenameFolderName(folder, newFolder, bang)
-    return s:RenameFile(a:folder, a:newFolder, a:bang)
+    if executable('mv') == 0
+        echoerr 'Need the suppport of `mv` shell command'
+        return 0
+    endif
+
+    if isdirectory(a:folder) == 0
+        echoerr 'Failed to find directory: ' . a:folder
+        return 0
+    endif
+    let prefix = a:bang ? 'mv -fv' : 'mv -nv'
+    let command = prefix . ' "' . a:folder . '" "' . a:newFolder . '"'
+    try
+        call system(command)
+    catch
+        return 0
+    endtry
+
+    return 1
 endfunction
 
 function! s:GetComponentName(vueFile)
