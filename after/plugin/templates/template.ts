@@ -40,13 +40,13 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
   // @State
   // private readonly foo
   // @storeModule.State('name')
-  // private readonly stateName: string | null
+  // private readonly stateName!: string | null
   // @Getter
-  // private readonly bar
+  // private readonly bar!
   // @Action
-  // private baz
+  // private baz!
   // @Action('foo')
-  // private aliasFoo
+  // private aliasFoo!
 
   /**************************************************************************
    * data
@@ -93,7 +93,7 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    **************************************************************************/
 
   // beforeCreate() {}
-  public created() {
+  created() {
     this.fetchData()
   }
   // beforeMount() {}
