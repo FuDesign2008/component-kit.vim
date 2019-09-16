@@ -444,12 +444,7 @@ function! s:LayoutComponent(vueFile, includeCss)
                 execute ':new ' . a:vueFile
             endif
         else
-            if withFolder
-                execute ':vnew ' . indexFile
-                execute ':new ' . a:vueFile
-            else
-                execute ':vnew ' . a:vueFile
-            endif
+            execute ':vnew ' . a:vueFile
         endif
     else
         if a:includeCss && strlen(cssFile) > 0
