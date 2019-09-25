@@ -84,7 +84,7 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    * methods
    **************************************************************************/
 
-  private async fetchData() {
+  private async fetchData(): Promise<void> {
     // TODO
   }
 
@@ -92,16 +92,16 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    * life cycle
    **************************************************************************/
 
-  // beforeCreate() {}
-  created() {
+  // beforeCreate(): void {}
+  created(): void {
     this.fetchData()
   }
-  // beforeMount() {}
-  // mounted() {}
-  // beforeUpate() {}
-  // updated() {}
-  // beforeDestroy() {}
-  // destroyed() {}
+  // beforeMount(): void {}
+  // mounted(): void {}
+  // beforeUpate(): void {}
+  // updated(): void {}
+  // beforeDestroy(): void {}
+  // destroyed(): void {}
 }
 
 export default ComponentName
