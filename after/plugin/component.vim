@@ -519,7 +519,7 @@ function! s:LayoutCurrentComponent()
     if strlen(vueFile) > 0
         call s:LayoutComponent(vueFile, 1)
     else
-        echoerr 'Can not find vue file for current buffer'
+        echomsg 'Can not find vue file for current buffer'
     endif
 endfunction
 
@@ -533,7 +533,7 @@ function! s:LayoutVueAndScript()
     if strlen(vueFile) > 0
         call s:LayoutComponent(vueFile, 0)
     else
-        echoerr 'Can not find vue file for current buffer'
+        echomsg 'Can not find vue file for current buffer'
     endif
 endfunction
 
@@ -570,7 +570,7 @@ function! s:SwitchFile(vueFile, currentType)
     if strlen(targetFile) > 0
         execute ':e ' targetFile
     else
-        echoerr 'Can not find '. a:currentType . 'for current buffer'
+        echomsg 'Can not find '. a:currentType . 'for current buffer'
     endif
 endfunction
 
@@ -593,7 +593,7 @@ function! s:SwitchCurrentComponent()
     if strlen(vueFile) > 0
         call s:SwitchFile(vueFile, currentType)
     else
-        echoerr 'Can not find vue file for current buffer'
+        echomsg 'Can not find vue file for current buffer'
     endif
 endfunction
 
@@ -1325,9 +1325,9 @@ function! VueLayoutAuto(timer)
     endif
 
     if s:autoLayout == 1
-        execute ':VueLay'
+        call s:LayoutVueAndScript()
     elseif s:autoLayout == 2
-        execute ':VueLayout'
+        call s:LayoutCurrentComponent()
     endif
 endfunction
 
