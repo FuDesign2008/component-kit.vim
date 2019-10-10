@@ -31,14 +31,18 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    **************************************************************************/
 
   // @Prop({ type: String, required: true })
-  // private readonly propName!: string
+  // private readonly requiredProp!: string
+  // @Prop({ type: String, default: '' })
+  // private readonly propWithDefault!: string
+  // @Prop({ type: String })
+  // private readonly prop!: string | undefined
 
   /**************************************************************************
    * vuex map state / getters / actions
    **************************************************************************/
 
   // @State
-  // private readonly foo
+  // private readonly foo!
   // @storeModule.State('name')
   // private readonly stateName!: string | null
   // @Getter
@@ -76,7 +80,7 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    **************************************************************************/
 
   // @Watch('dataName')
-  // dataNameOnChange(newValue: number, oldValue: number) {
+  // dataNameOnChange(newValue: number, oldValue: number): void {
   // TODO
   // }
 
