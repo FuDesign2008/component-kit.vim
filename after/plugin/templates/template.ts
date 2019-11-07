@@ -1,8 +1,9 @@
 /**
  *
  * @author fuyg
- * @date  `date +%Y-%m-%d`
+ * @date  CREATE_DATE
  */
+
 import Vue from 'vue'
 import Component /*, { mixins } */ from 'vue-class-component'
 // import { Prop, Ref, Watch } from 'vue-property-decorator'
@@ -30,11 +31,21 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    * props
    **************************************************************************/
 
-  // @Prop({ type: String, required: true })
+  // @Prop({
+  // type: String,
+  // required: true
+  // })
   // private readonly requiredProp!: string
-  // @Prop({ type: String, default: '' })
+
+  // @Prop({
+  // type: String,
+  // default: ''
+  // })
   // private readonly propWithDefault!: string
-  // @Prop({ type: String })
+
+  // @Prop({
+  // type: String
+  // })
   // private readonly prop!: string | undefined
 
   /**************************************************************************
@@ -43,14 +54,18 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
 
   // @State
   // private readonly foo!
-  // @storeModule.State('name')
-  // private readonly stateName!: string | null
+
   // @Getter
   // private readonly bar!
+
   // @Action
   // private baz!
+
   // @Action('foo')
   // private aliasFoo!
+
+  // @storeModule.State('name')
+  // private readonly stateName!: string | null
 
   /**************************************************************************
    * data
@@ -72,6 +87,7 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
    **************************************************************************/
   // @Ref()
   // private readonly anotherComponent!: AnotherComponent
+
   // @Ref('button-name')
   // private readonly button!: HTMLButtonElement
 
