@@ -1,8 +1,9 @@
 /**
  *
  * @author fuyg
- * @date  `date +%Y-%m-%d`
+ * @date  CREATE_DATE
  */
+
 import Vue from 'vue'
 import Component /*, { mixins } */ from 'vue-class-component'
 // import { Prop, Ref, Watch } from 'vue-property-decorator'

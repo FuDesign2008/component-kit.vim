@@ -1,3 +1,9 @@
+/**
+ *
+ * @author fuyg
+ * @date  CREATE_DATE
+ */
+
 // import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
