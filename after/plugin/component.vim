@@ -125,20 +125,30 @@ function! s:WriteFile(text, filePath)
     return 0
 endfunction
 
+" @return {String}
+function! s:FormatDate()
+    let time = localtime()
+    let dateFormat = '%Y-%m-%d'
+    let dateAsString = strftime(dateFormat, time)
+    return dateAsString
+endfunction
+
 " @return {0|1}
 function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(templateFilePath)
 
     let content = ''
+    let dateAsString = s:FormatDate()
 
     if strlen(templateText) > 0
         let newText = templateText
-        let newText = substitute(newText, 'ComponentName', a:componentName  , 'g')
-        let newText = substitute(newText, 'component-name', a:componentNameCamel  , 'g')
-        let newText = substitute(newText, 'VUE_EXTENSION', a:vueExtension  , 'g')
-        let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension  , 'g')
-        let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension  , 'g')
+        let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
+        let newText = substitute(newText, 'component-name', a:componentNameCamel, 'g')
+        let newText = substitute(newText, 'VUE_EXTENSION', a:vueExtension, 'g')
+        let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
+        let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension, 'g')
+        let newText = substitute(newText, 'CREATE_DATE', dateAsString, 'g')
         let content = newText
     endif
 
