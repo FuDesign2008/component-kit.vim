@@ -44,9 +44,17 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
   // private readonly propWithDefault!: string
 
   // @Prop({
-  // type: String
+  // type: String,
+  // required: false,
+  // default: 'default',
+  // validator(value) {
+  // const validValues = [
+  // TODO
+  // ]
+  // return validValues.include(value)
+  // },
   // })
-  // private readonly prop!: string | undefined
+  // private readonly propWithValidator!: string
 
   /**************************************************************************
    * vuex map state / getters / actions
