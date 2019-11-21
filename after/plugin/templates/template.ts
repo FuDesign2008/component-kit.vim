@@ -47,7 +47,7 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
   // private readonly bar!: string
 
   // @Action
-  // private baz!: () => void
+  // private baz!: () => Promise<void>
 
   // @storeModule.State('name')
   // private readonly aliasName!: string | null
