@@ -3,7 +3,6 @@
  * @author fuyg
  * @date  CREATE_DATE
  */
-
 import Vue from 'vue'
 import Component /*, { mixins } */ from 'vue-class-component'
 // import { Prop, Ref, Watch } from 'vue-property-decorator'
@@ -37,43 +36,21 @@ class ComponentName extends Vue /*mixins(ComponentNameMixin) */ {
   // })
   // private readonly requiredProp!: string
 
-  // @Prop({
-  // type: String,
-  // default: ''
-  // })
-  // private readonly propWithDefault!: string
-
-  // @Prop({
-  // type: String,
-  // required: false,
-  // default: 'default',
-  // validator(value) {
-  // const validValues = [
-  // TODO
-  // ]
-  // return validValues.include(value)
-  // },
-  // })
-  // private readonly propWithValidator!: string
-
   /**************************************************************************
    * vuex map state / getters / actions
    **************************************************************************/
 
   // @State
-  // private readonly foo!
+  // private readonly foo!: string
 
   // @Getter
-  // private readonly bar!
+  // private readonly bar!: string
 
   // @Action
-  // private baz!
-
-  // @Action('foo')
-  // private aliasFoo!
+  // private baz!: () => Promise<void>
 
   // @storeModule.State('name')
-  // private readonly stateName!: string | null
+  // private readonly aliasName!: string | null
 
   /**************************************************************************
    * data
