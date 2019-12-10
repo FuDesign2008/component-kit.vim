@@ -785,11 +785,12 @@ function! s:RenameComponent(name, bang)
         return
     endif
 
+    let theName = trim(a:name)
     let withFolder = s:DetectFolder(vueFile)
     if withFolder
-        call s:RenameComponentWithFolder(vueFile, a:name, a:bang)
+        call s:RenameComponentWithFolder(vueFile, theName, a:bang)
     else
-        call s:RenameComponentWithoutFolder(vueFile, a:name, a:bang)
+        call s:RenameComponentWithoutFolder(vueFile, theName, a:bang)
     endif
 endfunction
 
