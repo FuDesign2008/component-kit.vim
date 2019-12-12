@@ -44,6 +44,12 @@ let s:extensionLangMap = {
             \ 'scss': 'scss',
             \}
 
+let s:supportExtensionFullList = []
+call extend(s:supportExtensionFullList, s:supportVueExtensionList)
+call extend(s:supportExtensionFullList, s:supportScriptExtensionList)
+call extend(s:supportExtensionFullList, s:supportCssExtensionList)
+
+
 if exists('g:vue_component_middle_name') && strlen(g:vue_component_middle_name) > 0
     let s:middleName = g:vue_component_middle_name
 endif
@@ -1417,10 +1423,48 @@ command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
 command! VueReset call s:ResetStatus()
+
+function! VueRenameCompleter(argLead, cmdLine, cursorPos)
+    let vueFile = s:GetVueFileByCurrent()
+
+    if strlen(vueFile) > 0
+        let componentName = s:GetComponentName(vueFile)
+        if strlen(componentName) > 0
+            let trimed = trim(a:argLead)
+            if strlen(trimed) > 0
+                if stridx(componentName, trimed) > -1
+                    return [componentName]
+                endif
+            else
+                return [componentName]
+            endif
+        endif
+    endif
+
+    return []
+endfunction
+
+function! VueRenameExtCompleter(argLead, cmdLine, cursorPos)
+    let trimed = trim(a:argLead)
+    if strlen(trimed) == 0
+        return s:supportExtensionFullList
+    endif
+
+    let length = len(s:supportExtensionFullList)
+    let matchList = []
+    for item in s:supportExtensionFullList
+        if stridx(item, trimed) > -1
+            call add(matchList, item)
+        endif
+    endfor
+
+    return matchList
+endfunction
+
 " :VueRename[!] {newame}
-command! -nargs=1 -complete=file -bang VueRename :call s:RenameComponent("<args>", "<bang>")
+command! -nargs=1 -complete=customlist,VueRenameCompleter -bang VueRename :call s:RenameComponent("<args>", "<bang>")
 " :VueRenameExt[!] {extension}
-command! -nargs=1 -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
+command! -nargs=1 -complete=customlist,VueRenameExtCompleter -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
 
 command! -nargs=0 VueRemove :call s:RemoveCurrentComponent()
 
