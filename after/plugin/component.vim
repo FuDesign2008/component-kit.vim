@@ -157,16 +157,23 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
 endfunction
 
 "@return {0|1}
-function! s:UpdateClassName(filePath, componentName, componentNameNew)
+function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     let originalText = s:ReadFile(a:filePath)
     if strlen(originalText) == 0
         echoerr 'Failed to read file: ' . a:filePath
         return 0
     endif
 
+
+    " vue or script file
+    let newText = substitute(originalText, a:componentName, a:componentNameNew  , 'g')
+    let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
+
+    " vue or style file
     let className = s:Camelize(a:componentName)
     let classNameNew = s:Camelize(a:componentNameNew)
-    let newText = substitute(originalText, className, classNameNew  , 'g')
+    let newText = substitute(newText, className, classNameNew  , 'g')
+    let newText = substitute(newText, 'component-name', classNameNew  , 'g')
 
     let writeOk = s:WriteFile(newText, a:filePath)
     return writeOk
@@ -697,7 +704,7 @@ function s:Rename3Files(vueFile, newComponentName, bang)
     let isRenameOk = s:RenameFile(a:vueFile, vueFileNew, a:bang)
 
     if isRenameOk
-        call s:UpdateClassName(vueFileNew, componentName, a:newComponentName)
+        call s:UpdateComponentNameInFile(vueFileNew, componentName, a:newComponentName)
     else
         return ''
     endif
@@ -707,14 +714,17 @@ function s:Rename3Files(vueFile, newComponentName, bang)
         let styleFileNew = s:ComposeFilePath(styleFile, componentName, a:newComponentName)
         let isRenameOk = s:RenameFile(styleFile, styleFileNew, a:bang)
         if isRenameOk
-            call s:UpdateClassName(styleFileNew, componentName, a:newComponentName)
+            call s:UpdateComponentNameInFile(styleFileNew, componentName, a:newComponentName)
         endif
     endif
 
     let scriptFile = s:FindScriptFile(a:vueFile)
     if strlen(scriptFile) > 0
         let scriptFileNew = s:ComposeFilePath(scriptFile, componentName, a:newComponentName)
-        call s:RenameFile(scriptFile, scriptFileNew, a:bang)
+        let isRenameOk = s:RenameFile(scriptFile, scriptFileNew, a:bang)
+        if isRenameOk
+            call s:UpdateComponentNameInFile(scriptFileNew, componentName, a:newComponentName)
+        endif
     endif
 
     let styleConfig = {
