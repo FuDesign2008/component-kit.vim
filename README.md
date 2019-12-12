@@ -36,6 +36,7 @@ Tools for vue-like component
 1. `VueRename`: rename all files of a vue component, and change style/script file path in template file
     - `VueRename NewName` will rename vue/style/script file to `NewName.vue`, `NewName.comp.css`, `NewName.comp.js`
 1. `VueRenameExt`: rename the extension of style/script file, and change style/script file path in template file
+1. `VueRemove`: remove all files of the component of current buffer
 
 ```
 

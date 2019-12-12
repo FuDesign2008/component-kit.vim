@@ -1353,6 +1353,54 @@ function! VueLayoutAutoWithDelay()
     call timer_start(10, 'VueLayoutAuto')
 endfunction
 
+function! s:RemoveFile(filePath, removedList)
+    if strlen(a:filePath) > 0
+        let result = delete(a:filePath, '')
+        if result == 0
+            call add(a:removedList, a:filePath)
+        endif
+    endif
+endfunction
+
+function! s:RemoveComponentWithVueFile(vueFile)
+    let withFolder = s:DetectFolder(a:vueFile)
+
+    if withFolder
+        let folderPath = fnamemodify(a:vueFile, ':p:h')
+        let result = -1
+        if isdirectory(folderPath)
+            let result = delete(folderPath, 'rf')
+        endif
+        if result == -1
+            echoerr 'Failed to remove directory: ' . folderPath
+        else
+            echo 'Success remove component of current buffer.'
+        endif
+    else
+        let scriptFile = s:FindScriptFile(a:vueFile)
+        let cssFile = s:FindStyleFile(a:vueFile)
+        let removedFileList = []
+        call s:RemoveFile(scriptFile, removedFileList)
+        call s:RemoveFile(cssFile, removedFileList)
+        call s:RemoveFile(a:vueFile, removedFileList)
+        if len(removedFileList)
+            echo 'Success to remove files: ' . join(removedFileList, ', ')
+        else
+            echo 'Failed to remove component of current buffer.'
+        endif
+    endif
+
+endfunction
+
+function! s:RemoveCurrentComponent()
+    let vueFile = s:GetVueFileByCurrent()
+    if strlen(vueFile) > 0
+        call s:RemoveComponentWithVueFile(vueFile)
+    else
+        echomsg 'Can not find vue file for current buffer.'
+    endif
+endfunction
+
 command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file VueCreateFolder call s:CreateComponentWithFolder(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
@@ -1363,6 +1411,9 @@ command! VueReset call s:ResetStatus()
 command! -nargs=1 -complete=file -bang VueRename :call s:RenameComponent("<args>", "<bang>")
 " :VueRenameExt[!] {extension}
 command! -nargs=1 -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
+
+command! -nargs=0 VueRemove :call s:RemoveCurrentComponent()
+
 
 
 if exists('*timer_start')
