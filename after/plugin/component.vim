@@ -1374,7 +1374,9 @@ function! s:RemoveComponentWithVueFile(vueFile)
         call s:RemoveFile(scriptFile, removedFileList)
         call s:RemoveFile(cssFile, removedFileList)
         call s:RemoveFile(a:vueFile, removedFileList)
+
         if len(removedFileList)
+            execute ':enew'
             echo 'Success to remove files: ' . join(removedFileList, ', ')
         else
             echo 'Failed to remove component of current buffer.'
@@ -1450,6 +1452,8 @@ function! s:FolderizeComponentWithVueFile(vueFile)
         endif
 
         call s:BuildIndexFile(vueFileNew, scriptFileExt)
+
+        call s:LayoutComponent(vueFileNew, 1)
 
         echo 'Success to folderize component of current buffer.'
     else
