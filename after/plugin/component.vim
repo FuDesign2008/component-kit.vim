@@ -1344,31 +1344,6 @@ function! s:ParseTag(tagname, html)
     return nodeList
 endfunction
 
-
-function! VueLayoutAuto(timer)
-    let isOpen =  s:isQuickFixOpened()
-    if isOpen
-        return
-    endif
-
-    if s:autoLayout == 1
-        call s:LayoutVueAndScript()
-    elseif s:autoLayout == 2
-        call s:LayoutCurrentComponent()
-    endif
-endfunction
-
-function! VueLayoutComponentEnd(timer)
-    call s:ResetStatus()
-endfunction
-
-function! VueLayoutAutoWithDelay()
-    if s:vue_component_layout_doing
-        return
-    endif
-    call timer_start(10, 'VueLayoutAuto')
-endfunction
-
 function! s:RemoveFile(filePath, removedList)
     if strlen(a:filePath) > 0
         let result = delete(a:filePath, '')
@@ -1417,12 +1392,104 @@ function! s:RemoveCurrentComponent()
     endif
 endfunction
 
-command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
-command! -nargs=+ -complete=file VueCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! VueLayout call s:LayoutCurrentComponent()
-command! VueLay call s:LayoutVueAndScript()
-command! VueAlt call s:SwitchCurrentComponent()
-command! VueReset call s:ResetStatus()
+function! s:MoveFileToFolder(filePath, folderPath, movedFileList)
+    if strlen(a:filePath) == 0 || filereadable(a:filePath) == 0
+        return
+    endif
+
+    let fileName = fnamemodify(a:filePath, ':t')
+    let filePathNew = a:folderPath . '/' . fileName
+    let fileContent = readfile(a:filePath, 'b')
+    call writefile(fileContent, filePathNew, 'b')
+
+    call s:RemoveFile(a:filePath, a:movedFileList)
+endfunction
+
+function! s:BuildIndexFile(vueFile, scriptFileExt)
+    let indexFilePath = s:MakeIndexFile(a:vueFile, a:scriptFileExt)
+    if strlen(indexFilePath) > 0
+        let templateDir = s:FindTemplateDir()
+        let componentName = s:GetComponentName(a:vueFile)
+        let componentNameCamel = s:Camelize(componentName)
+        let vueExtension = fnamemodify(a:vueFile, ':e')
+
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', vueExtension)
+    endif
+endfunction
+
+function! s:FolderizeComponentWithVueFile(vueFile)
+    let withFolder = s:DetectFolder(a:vueFile)
+
+    if withFolder
+        echo 'Component of current buffer is already in folder structure.'
+        return
+    endif
+
+    let folderPath = fnamemodify(a:vueFile, ':p:r')
+    let successToCreateFolder = mkdir(folderPath)
+    if successToCreateFolder == 0
+        echoerr 'Failed to create folder: ' . folderPath
+        return
+    endif
+
+    let scriptFile = s:FindScriptFile(a:vueFile)
+    let cssFile = s:FindStyleFile(a:vueFile)
+    let movedFileList = []
+
+    call s:MoveFileToFolder(scriptFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(cssFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(a:vueFile, folderPath, movedFileList)
+
+    if len(movedFileList) > 0
+        let vueFileName = fnamemodify(a:vueFile, ':t')
+        let vueFileNew = folderPath . '/' . vueFileName
+
+        let scriptFileExt = 'ts'
+        if strlen(scriptFile) > 0
+            let scriptFileExt = fnamemodify(scriptFile, ':e')
+        endif
+
+        call s:BuildIndexFile(vueFileNew, scriptFileExt)
+
+        echo 'Success to folderize component of current buffer.'
+    else
+        echo 'Failed to folderize component of current buffer.'
+    endif
+
+endfunction
+
+function! s:FolderizeCurrentComponent()
+    let vueFile = s:GetVueFileByCurrent()
+    if strlen(vueFile) > 0
+        call s:FolderizeComponentWithVueFile(vueFile)
+    else
+        echomsg 'Can not find vue file for current buffer.'
+    endif
+endfunction
+
+function! VueLayoutAuto(timer)
+    let isOpen =  s:isQuickFixOpened()
+    if isOpen
+        return
+    endif
+
+    if s:autoLayout == 1
+        call s:LayoutVueAndScript()
+    elseif s:autoLayout == 2
+        call s:LayoutCurrentComponent()
+    endif
+endfunction
+
+function! VueLayoutComponentEnd(timer)
+    call s:ResetStatus()
+endfunction
+
+function! VueLayoutAutoWithDelay()
+    if s:vue_component_layout_doing
+        return
+    endif
+    call timer_start(10, 'VueLayoutAuto')
+endfunction
 
 function! VueRenameCompleter(argLead, cmdLine, cursorPos)
     let vueFile = s:GetVueFileByCurrent()
@@ -1461,12 +1528,22 @@ function! VueRenameExtCompleter(argLead, cmdLine, cursorPos)
     return matchList
 endfunction
 
+
+
+command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
+command! -nargs=+ -complete=file VueCreateFolder call s:CreateComponentWithFolder(<f-args>)
+command! VueLayout call s:LayoutCurrentComponent()
+command! VueLay call s:LayoutVueAndScript()
+command! VueAlt call s:SwitchCurrentComponent()
+command! VueReset call s:ResetStatus()
+
 " :VueRename[!] {newame}
 command! -nargs=1 -complete=customlist,VueRenameCompleter -bang VueRename :call s:RenameComponent("<args>", "<bang>")
 " :VueRenameExt[!] {extension}
 command! -nargs=1 -complete=customlist,VueRenameExtCompleter -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
 
 command! -nargs=0 VueRemove :call s:RemoveCurrentComponent()
+command! -nargs=0 VueFolderize :call s:FolderizeCurrentComponent()
 
 
 
