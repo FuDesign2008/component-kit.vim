@@ -44,6 +44,12 @@ let s:extensionLangMap = {
             \ 'scss': 'scss',
             \}
 
+let s:supportExtensionFullList = []
+call extend(s:supportExtensionFullList, s:supportVueExtensionList)
+call extend(s:supportExtensionFullList, s:supportScriptExtensionList)
+call extend(s:supportExtensionFullList, s:supportCssExtensionList)
+
+
 if exists('g:vue_component_middle_name') && strlen(g:vue_component_middle_name) > 0
     let s:middleName = g:vue_component_middle_name
 endif
@@ -157,16 +163,23 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
 endfunction
 
 "@return {0|1}
-function! s:UpdateClassName(filePath, componentName, componentNameNew)
+function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     let originalText = s:ReadFile(a:filePath)
     if strlen(originalText) == 0
         echoerr 'Failed to read file: ' . a:filePath
         return 0
     endif
 
+
+    " vue or script file
+    let newText = substitute(originalText, a:componentName, a:componentNameNew  , 'g')
+    let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
+
+    " vue or style file
     let className = s:Camelize(a:componentName)
     let classNameNew = s:Camelize(a:componentNameNew)
-    let newText = substitute(originalText, className, classNameNew  , 'g')
+    let newText = substitute(newText, className, classNameNew  , 'g')
+    let newText = substitute(newText, 'component-name', classNameNew  , 'g')
 
     let writeOk = s:WriteFile(newText, a:filePath)
     return writeOk
@@ -697,7 +710,7 @@ function s:Rename3Files(vueFile, newComponentName, bang)
     let isRenameOk = s:RenameFile(a:vueFile, vueFileNew, a:bang)
 
     if isRenameOk
-        call s:UpdateClassName(vueFileNew, componentName, a:newComponentName)
+        call s:UpdateComponentNameInFile(vueFileNew, componentName, a:newComponentName)
     else
         return ''
     endif
@@ -707,14 +720,17 @@ function s:Rename3Files(vueFile, newComponentName, bang)
         let styleFileNew = s:ComposeFilePath(styleFile, componentName, a:newComponentName)
         let isRenameOk = s:RenameFile(styleFile, styleFileNew, a:bang)
         if isRenameOk
-            call s:UpdateClassName(styleFileNew, componentName, a:newComponentName)
+            call s:UpdateComponentNameInFile(styleFileNew, componentName, a:newComponentName)
         endif
     endif
 
     let scriptFile = s:FindScriptFile(a:vueFile)
     if strlen(scriptFile) > 0
         let scriptFileNew = s:ComposeFilePath(scriptFile, componentName, a:newComponentName)
-        call s:RenameFile(scriptFile, scriptFileNew, a:bang)
+        let isRenameOk = s:RenameFile(scriptFile, scriptFileNew, a:bang)
+        if isRenameOk
+            call s:UpdateComponentNameInFile(scriptFileNew, componentName, a:newComponentName)
+        endif
     endif
 
     let styleConfig = {
@@ -1328,6 +1344,128 @@ function! s:ParseTag(tagname, html)
     return nodeList
 endfunction
 
+function! s:RemoveFile(filePath, removedList)
+    if strlen(a:filePath) > 0
+        let result = delete(a:filePath, '')
+        if result == 0
+            call add(a:removedList, a:filePath)
+        endif
+    endif
+endfunction
+
+function! s:RemoveComponentWithVueFile(vueFile)
+    let withFolder = s:DetectFolder(a:vueFile)
+
+    if withFolder
+        let folderPath = fnamemodify(a:vueFile, ':p:h')
+        let result = -1
+        if isdirectory(folderPath)
+            let result = delete(folderPath, 'rf')
+        endif
+        if result == -1
+            echoerr 'Failed to remove directory: ' . folderPath
+        else
+            echo 'Success remove component of current buffer.'
+        endif
+    else
+        let scriptFile = s:FindScriptFile(a:vueFile)
+        let cssFile = s:FindStyleFile(a:vueFile)
+        let removedFileList = []
+        call s:RemoveFile(scriptFile, removedFileList)
+        call s:RemoveFile(cssFile, removedFileList)
+        call s:RemoveFile(a:vueFile, removedFileList)
+        if len(removedFileList)
+            echo 'Success to remove files: ' . join(removedFileList, ', ')
+        else
+            echo 'Failed to remove component of current buffer.'
+        endif
+    endif
+
+endfunction
+
+function! s:RemoveCurrentComponent()
+    let vueFile = s:GetVueFileByCurrent()
+    if strlen(vueFile) > 0
+        call s:RemoveComponentWithVueFile(vueFile)
+    else
+        echomsg 'Can not find vue file for current buffer.'
+    endif
+endfunction
+
+function! s:MoveFileToFolder(filePath, folderPath, movedFileList)
+    if strlen(a:filePath) == 0 || filereadable(a:filePath) == 0
+        return
+    endif
+
+    let fileName = fnamemodify(a:filePath, ':t')
+    let filePathNew = a:folderPath . '/' . fileName
+    let fileContent = readfile(a:filePath, 'b')
+    call writefile(fileContent, filePathNew, 'b')
+
+    call s:RemoveFile(a:filePath, a:movedFileList)
+endfunction
+
+function! s:BuildIndexFile(vueFile, scriptFileExt)
+    let indexFilePath = s:MakeIndexFile(a:vueFile, a:scriptFileExt)
+    if strlen(indexFilePath) > 0
+        let templateDir = s:FindTemplateDir()
+        let componentName = s:GetComponentName(a:vueFile)
+        let componentNameCamel = s:Camelize(componentName)
+        let vueExtension = fnamemodify(a:vueFile, ':e')
+
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', vueExtension)
+    endif
+endfunction
+
+function! s:FolderizeComponentWithVueFile(vueFile)
+    let withFolder = s:DetectFolder(a:vueFile)
+
+    if withFolder
+        echo 'Component of current buffer is already in folder structure.'
+        return
+    endif
+
+    let folderPath = fnamemodify(a:vueFile, ':p:r')
+    let successToCreateFolder = mkdir(folderPath)
+    if successToCreateFolder == 0
+        echoerr 'Failed to create folder: ' . folderPath
+        return
+    endif
+
+    let scriptFile = s:FindScriptFile(a:vueFile)
+    let cssFile = s:FindStyleFile(a:vueFile)
+    let movedFileList = []
+
+    call s:MoveFileToFolder(scriptFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(cssFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(a:vueFile, folderPath, movedFileList)
+
+    if len(movedFileList) > 0
+        let vueFileName = fnamemodify(a:vueFile, ':t')
+        let vueFileNew = folderPath . '/' . vueFileName
+
+        let scriptFileExt = 'ts'
+        if strlen(scriptFile) > 0
+            let scriptFileExt = fnamemodify(scriptFile, ':e')
+        endif
+
+        call s:BuildIndexFile(vueFileNew, scriptFileExt)
+
+        echo 'Success to folderize component of current buffer.'
+    else
+        echo 'Failed to folderize component of current buffer.'
+    endif
+
+endfunction
+
+function! s:FolderizeCurrentComponent()
+    let vueFile = s:GetVueFileByCurrent()
+    if strlen(vueFile) > 0
+        call s:FolderizeComponentWithVueFile(vueFile)
+    else
+        echomsg 'Can not find vue file for current buffer.'
+    endif
+endfunction
 
 function! VueLayoutAuto(timer)
     let isOpen =  s:isQuickFixOpened()
@@ -1353,16 +1491,60 @@ function! VueLayoutAutoWithDelay()
     call timer_start(10, 'VueLayoutAuto')
 endfunction
 
+function! VueRenameCompleter(argLead, cmdLine, cursorPos)
+    let vueFile = s:GetVueFileByCurrent()
+
+    if strlen(vueFile) > 0
+        let componentName = s:GetComponentName(vueFile)
+        if strlen(componentName) > 0
+            let trimed = trim(a:argLead)
+            if strlen(trimed) > 0
+                if stridx(componentName, trimed) > -1
+                    return [componentName]
+                endif
+            else
+                return [componentName]
+            endif
+        endif
+    endif
+
+    return []
+endfunction
+
+function! VueRenameExtCompleter(argLead, cmdLine, cursorPos)
+    let trimed = trim(a:argLead)
+    if strlen(trimed) == 0
+        return s:supportExtensionFullList
+    endif
+
+    let length = len(s:supportExtensionFullList)
+    let matchList = []
+    for item in s:supportExtensionFullList
+        if stridx(item, trimed) > -1
+            call add(matchList, item)
+        endif
+    endfor
+
+    return matchList
+endfunction
+
+
+
 command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file VueCreateFolder call s:CreateComponentWithFolder(<f-args>)
 command! VueLayout call s:LayoutCurrentComponent()
 command! VueLay call s:LayoutVueAndScript()
 command! VueAlt call s:SwitchCurrentComponent()
 command! VueReset call s:ResetStatus()
+
 " :VueRename[!] {newame}
-command! -nargs=1 -complete=file -bang VueRename :call s:RenameComponent("<args>", "<bang>")
+command! -nargs=1 -complete=customlist,VueRenameCompleter -bang VueRename :call s:RenameComponent("<args>", "<bang>")
 " :VueRenameExt[!] {extension}
-command! -nargs=1 -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
+command! -nargs=1 -complete=customlist,VueRenameExtCompleter -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
+
+command! -nargs=0 VueRemove :call s:RemoveCurrentComponent()
+command! -nargs=0 VueFolderize :call s:FolderizeCurrentComponent()
+
 
 
 if exists('*timer_start')
