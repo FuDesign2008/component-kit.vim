@@ -199,7 +199,7 @@ function! s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExte
         call mkdir(targetDir, 'p')
     endif
 
-    let templateDir = s:FindTemplateDir()
+    let templateDir = s:FindTemplateDirWithType(a:vueFile)
     let componentName = s:GetComponentName(a:vueFile)
     let componentNameCamel = s:Camelize(componentName)
 
@@ -308,6 +308,17 @@ function! s:FindTemplateDir()
 
     echoerr 'Can not find .vue-component-template directory, please set g:vue_component_template_dir in .vimrc'
     return ''
+endfunction
+
+" @return {String}
+function!  s:FindTemplateDirWithType(vueFile)
+    let templateDir = s:FindTemplateDir()
+    let extension = fnamemodify(a:vueFile, ':e')
+    if strlen(templateDir) == 0
+        return ''
+    endif
+    let templateDirWithType = templateDir . '/' . extension
+    return templateDirWithType
 endfunction
 
 " @param {string} vueFile
@@ -1410,7 +1421,7 @@ endfunction
 function! s:BuildIndexFile(vueFile, scriptFileExt)
     let indexFilePath = s:MakeIndexFile(a:vueFile, a:scriptFileExt)
     if strlen(indexFilePath) > 0
-        let templateDir = s:FindTemplateDir()
+        let templateDir = s:FindTemplateDirWithType(a:vueFile)
         let componentName = s:GetComponentName(a:vueFile)
         let componentNameCamel = s:Camelize(componentName)
         let vueExtension = fnamemodify(a:vueFile, ':e')
