@@ -397,8 +397,15 @@ function! s:CreateComponentWithFolder(...)
 
     let scriptFile = s:MakeScriptFile(vueFile, scriptExtension)
     let cssFile = s:MakeCssFile(vueFile, styleExtension)
-    let indexFile = s:MakeIndexFile(vueFile, scriptExtension)
-    let fileList = [indexFile, vueFile, scriptFile, cssFile]
+
+
+    if vueExtension ==# 'wpy'
+        " *.wpy 不需要 index
+        let fileList = [vueFile, scriptFile, cssFile]
+    else
+        let indexFile = s:MakeIndexFile(vueFile, scriptExtension)
+        let fileList = [indexFile, vueFile, scriptFile, cssFile]
+    endif
 
     let isCreateOk =   s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
     if !isCreateOk
