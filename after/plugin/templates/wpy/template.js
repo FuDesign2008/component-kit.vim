@@ -9,7 +9,7 @@ import wepy from 'wepy'
 
 class ComponentName extends wepy.component {
   // 声明页面中所引用的组件，或声明组件中所引用的子组件
-  // id(小写): 组件
+  // id(小写-_): 组件
   // components = { }
 
   // props = { }
@@ -58,4 +58,3 @@ class ComponentName extends wepy.component {
 }
 
 export default ComponentName
-
