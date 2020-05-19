@@ -7,7 +7,7 @@ Tools for generate/refract component
 1.  `g:kit_component_middle_name`: The middle name for creating & finding script/style file, default is `'comp'`
 1.  `g:kit_component_script_extension`: The extension for creating & finding script file, default is `'js'`
 1.  `g:kit_component_css_extension`: The extension for creating & finding style file, default is `'css'`
-1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.vue-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `VUE_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
+1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.vue-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `TEMPLATE_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
 1.  `g:kit_component_auto_layout`: Call `:CompLay` / `:CompLayout` automatically when opening `*.vue`/`*.wpy` or `index.js/index.ts` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
     -   If the value is `0`, no command will be called
     -   If the value is `1`, command `:CompLay` will be called
@@ -15,7 +15,7 @@ Tools for generate/refract component
 
 ## Commands
 
-1. `CompCreate`: create vue component files, syntax `:CompCreate ./path/to/ComponentName.[extension] [script extension]? [style extension]?`
+1. `CompCreate`: create vue component files, syntax `:CompCreate ./path/to/ComponentName.[extension] [script extension]? [style extension]? [middle name]?`
     - `:CompCreate path/to/Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
     - `:CompCreate path/to/Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
     - `:CompCreate path/to/Example.vue ts` will create `Example.vue`, `Example.comp.ts`, `Example.comp.css` files

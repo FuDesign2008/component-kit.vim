@@ -34,7 +34,7 @@ let s:kit_component_layout_doing = 0
 " only use when finding component files
 "
 " wpy is used for https://github.com/Tencent/wepy
-let s:supportVueExtensionList = ['vue', 'wpy']
+let s:supportTemplateExtensionList = ['vue', 'wpy']
 let s:supportScriptExtensionList = [ 'js', 'ts', 'jsx', 'json']
 let s:supportCssExtensionList = ['css', 'scss', 'less']
 let s:extensionLangMap = {
@@ -45,7 +45,7 @@ let s:extensionLangMap = {
             \}
 
 let s:supportExtensionFullList = []
-call extend(s:supportExtensionFullList, s:supportVueExtensionList)
+call extend(s:supportExtensionFullList, s:supportTemplateExtensionList)
 call extend(s:supportExtensionFullList, s:supportScriptExtensionList)
 call extend(s:supportExtensionFullList, s:supportCssExtensionList)
 
@@ -140,7 +140,7 @@ function! s:FormatDate()
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, vueExtension)
+function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, templateExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(templateFilePath)
 
@@ -151,7 +151,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
         let newText = templateText
         let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
         let newText = substitute(newText, 'component-name', a:componentNameCamel, 'g')
-        let newText = substitute(newText, 'VUE_EXTENSION', a:vueExtension, 'g')
+        let newText = substitute(newText, 'TEMPLATE_EXTENSION', a:templateExtension, 'g')
         let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
         let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension, 'g')
         let newText = substitute(newText, 'CREATE_DATE', dateAsString, 'g')
@@ -186,7 +186,7 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+function! s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styleExtension, templateExtension)
     for theFile in a:fileList
         if filereadable(theFile)
             echoerr theFile . ' does exist!'
@@ -194,76 +194,76 @@ function! s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExte
         endif
     endfor
 
-    let targetDir = fnamemodify(a:vueFile, ':p:h')
+    let targetDir = fnamemodify(a:templateFile, ':p:h')
     if !isdirectory(targetDir)
         call mkdir(targetDir, 'p')
     endif
 
-    let templateDir = s:FindTemplateDirWithType(a:vueFile)
-    let componentName = s:GetComponentName(a:vueFile)
+    let templateDir = s:FindTemplateDirWithType(a:templateFile)
+    let componentName = s:GetComponentName(a:templateFile)
     let componentNameCamel = s:Camelize(componentName)
 
     for theFile in a:fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, a:scriptExtension, a:styleExtension, a:vueExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, a:scriptExtension, a:styleExtension, a:templateExtension)
     endfor
     return 1
 endfunction
 
 
-function! s:MakeCssFile(vueFile, extension)
+function! s:MakeCssFile(templateFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
         let theExtension = s:styleExtension
     endif
-    let cssFile = fnamemodify(a:vueFile, ':r') . '.' . s:middleName .'.' . theExtension
+    let cssFile = fnamemodify(a:templateFile, ':r') . '.' . s:middleName .'.' . theExtension
     return cssFile
 endfunction
 
-"@param {string} vueFile
+"@param {string} templateFile
 "@param {string} extension
-function! s:MakeIndexFile(vueFile, extension)
+function! s:MakeIndexFile(templateFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
         let theExtension = s:scriptExtension
     endif
     let fileName = 'index.' . theExtension
-    let indexFile = fnamemodify(a:vueFile, ':p:h') . '/' . fileName
+    let indexFile = fnamemodify(a:templateFile, ':p:h') . '/' . fileName
     return indexFile
 endfunction
 
-"@param {string} vueFile
+"@param {string} templateFile
 "@param {string} extension
-function! s:MakeScriptFile(vueFile, extension)
+function! s:MakeScriptFile(templateFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
         let theExtension = s:scriptExtension
     endif
-    let scriptFile = fnamemodify(a:vueFile, ':r') . '.' . s:middleName . '.' . theExtension
+    let scriptFile = fnamemodify(a:templateFile, ':r') . '.' . s:middleName . '.' . theExtension
     return scriptFile
 endfunction
 
-function! s:MakeCssFileList(vueFile)
+function! s:MakeCssFileList(templateFile)
     let fileList = []
     for extension in s:supportCssExtensionList
-        let file = s:MakeCssFile(a:vueFile, extension)
+        let file = s:MakeCssFile(a:templateFile, extension)
         call add(fileList, file)
     endfor
     return fileList
 endfunction
 
-function! s:MakeScriptFileList(vueFile)
+function! s:MakeScriptFileList(templateFile)
     let fileList = []
     for extension in s:supportScriptExtensionList
-        let file = s:MakeScriptFile(a:vueFile, extension)
+        let file = s:MakeScriptFile(a:templateFile, extension)
         call add(fileList, file)
     endfor
     return fileList
 endfunction
 
-function! s:MakeIndexFileList(vueFile)
+function! s:MakeIndexFileList(templateFile)
     let fileList = []
     for extension in s:supportScriptExtensionList
-        let file = s:MakeIndexFile(a:vueFile, extension)
+        let file = s:MakeIndexFile(a:templateFile, extension)
         call add(fileList, file)
     endfor
     return fileList
@@ -311,9 +311,9 @@ function! s:FindTemplateDir()
 endfunction
 
 " @return {String}
-function!  s:FindTemplateDirWithType(vueFile)
+function!  s:FindTemplateDirWithType(templateFile)
     let templateDir = s:FindTemplateDir()
-    let extension = fnamemodify(a:vueFile, ':e')
+    let extension = fnamemodify(a:templateFile, ':e')
     if strlen(templateDir) == 0
         return ''
     endif
@@ -321,15 +321,15 @@ function!  s:FindTemplateDirWithType(vueFile)
     return templateDirWithType
 endfunction
 
-" @param {string} vueFile
+" @param {string} templateFile
 " @return {string}
-function! s:CompleteExtension(vueFile)
-    let extension = fnamemodify(a:vueFile, ':e')
-    let index = index(s:supportVueExtensionList, extension)
+function! s:CompleteExtension(templateFile)
+    let extension = fnamemodify(a:templateFile, ':e')
+    let index = index(s:supportTemplateExtensionList, extension)
     if index > -1
-        return a:vueFile
+        return a:templateFile
     else
-        return a:vueFile  . '.vue'
+        return a:templateFile  . '.vue'
     endif
 endfunction
 
@@ -341,14 +341,14 @@ function! s:Camelize(str)
     return camelized
 endfunction
 
-" @param {String} vueFile
+" @param {String} templateFile
 " @param {String} [scriptExtension]
 " @param {String} [styleExtension]
-" function! s:CreateComponent(vueFile, scriptExtension, styleExtension)
+" function! s:CreateComponent(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponent(...)
     let argsCount = a:0
-    let vueFile = s:CompleteExtension(a:1)
-    let vueExtension = fnamemodify(vueFile, ':e')
+    let templateFile = s:CompleteExtension(a:1)
+    let templateExtension = fnamemodify(templateFile, ':e')
 
     let scriptExtension = s:scriptExtension
     if argsCount >= 2 && strlen(a:2) > 1
@@ -360,30 +360,30 @@ function! s:CreateComponent(...)
         let styleExtension = a:3
     endif
 
-    let scriptFile = s:MakeScriptFile(vueFile, scriptExtension)
-    let cssFile = s:MakeCssFile(vueFile, styleExtension)
-    let fileList = [vueFile, scriptFile, cssFile]
+    let scriptFile = s:MakeScriptFile(templateFile, scriptExtension)
+    let cssFile = s:MakeCssFile(templateFile, styleExtension)
+    let fileList = [templateFile, scriptFile, cssFile]
 
-    let isCreateOk = s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+    let isCreateOk = s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styleExtension, templateExtension)
     if !isCreateOk
         return
     endif
 
-    call s:LayoutComponent(vueFile, 1)
+    call s:LayoutComponent(templateFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
-" @param {String} vueFile
+" @param {String} templateFile
 " @param {String} [scriptExtension]
 " @param {String} [styleExtension]
-" function! s:CreateComponentWithFolder(vueFile, scriptExtension, styleExtension)
+" function! s:CreateComponentWithFolder(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponentWithFolder(...)
     let argsCount = a:0
     let completed = s:CompleteExtension(a:1)
     let path = fnamemodify(completed, ':p:r')
-    let vueFileName = fnamemodify(completed, ':p:t')
-    let vueFile = path . '/' . vueFileName
-    let vueExtension = fnamemodify(vueFile, ':e')
+    let templateFileName = fnamemodify(completed, ':p:t')
+    let templateFile = path . '/' . templateFileName
+    let templateExtension = fnamemodify(templateFile, ':e')
 
     let scriptExtension = s:scriptExtension
     if argsCount >= 2 && strlen(a:2) > 1
@@ -395,29 +395,29 @@ function! s:CreateComponentWithFolder(...)
         let styleExtension = a:3
     endif
 
-    let scriptFile = s:MakeScriptFile(vueFile, scriptExtension)
-    let cssFile = s:MakeCssFile(vueFile, styleExtension)
+    let scriptFile = s:MakeScriptFile(templateFile, scriptExtension)
+    let cssFile = s:MakeCssFile(templateFile, styleExtension)
 
 
-    if vueExtension ==# 'wpy'
+    if templateExtension ==# 'wpy'
         " *.wpy 不需要 index
-        let fileList = [vueFile, scriptFile, cssFile]
+        let fileList = [templateFile, scriptFile, cssFile]
     else
-        let indexFile = s:MakeIndexFile(vueFile, scriptExtension)
-        let fileList = [indexFile, vueFile, scriptFile, cssFile]
+        let indexFile = s:MakeIndexFile(templateFile, scriptExtension)
+        let fileList = [indexFile, templateFile, scriptFile, cssFile]
     endif
 
-    let isCreateOk =   s:CreateAndWriteFileList(fileList, vueFile, scriptExtension, styleExtension, vueExtension)
+    let isCreateOk =   s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styleExtension, templateExtension)
     if !isCreateOk
         return
     endif
 
-    call s:LayoutComponent(vueFile, 1)
+    call s:LayoutComponent(templateFile, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
-function! s:FindScriptFile(vueFile)
-    let fileList = s:MakeScriptFileList(a:vueFile)
+function! s:FindScriptFile(templateFile)
+    let fileList = s:MakeScriptFileList(a:templateFile)
     for theFile in fileList
         if filereadable(theFile)
             return theFile
@@ -426,8 +426,8 @@ function! s:FindScriptFile(vueFile)
     return ''
 endfunction
 
-function! s:FindStyleFile(vueFile)
-    let fileList = s:MakeCssFileList(a:vueFile)
+function! s:FindStyleFile(templateFile)
+    let fileList = s:MakeCssFileList(a:templateFile)
     for theFile in fileList
         if filereadable(theFile)
             return theFile
@@ -436,8 +436,8 @@ function! s:FindStyleFile(vueFile)
     return ''
 endfunction
 
-function! s:FindIndexFile(vueFile)
-    let fileList = s:MakeIndexFileList(a:vueFile)
+function! s:FindIndexFile(templateFile)
+    let fileList = s:MakeIndexFileList(a:templateFile)
     for theFile in fileList
         if filereadable(theFile)
             return theFile
@@ -446,20 +446,20 @@ function! s:FindIndexFile(vueFile)
     return ''
 endfunction
 
-function! s:DetectFolder(vueFile)
-    let folderName = s:GetFolderName(a:vueFile)
-    let componentName = s:GetComponentName(a:vueFile)
+function! s:DetectFolder(templateFile)
+    let folderName = s:GetFolderName(a:templateFile)
+    let componentName = s:GetComponentName(a:templateFile)
     if folderName !=# componentName
         return 0
     endif
-    let indexFile = s:FindIndexFile(a:vueFile)
+    let indexFile = s:FindIndexFile(a:templateFile)
     return empty(indexFile) ? 0 : 1
 endfunction
 
 
-"@param {string} vueFile
+"@param {string} templateFile
 "@param {0|1} includeCss
-function! s:LayoutComponent(vueFile, includeCss)
+function! s:LayoutComponent(templateFile, includeCss)
     if exists('*timer_start')
        if s:kit_component_layout_doing
             return
@@ -467,10 +467,10 @@ function! s:LayoutComponent(vueFile, includeCss)
         let s:kit_component_layout_doing = 1
     endif
 
-    let scriptFile = s:FindScriptFile(a:vueFile)
-    let cssFile = s:FindStyleFile(a:vueFile)
-    let withFolder = s:DetectFolder(a:vueFile)
-    let indexFile = s:FindIndexFile(a:vueFile)
+    let scriptFile = s:FindScriptFile(a:templateFile)
+    let cssFile = s:FindStyleFile(a:templateFile)
+    let withFolder = s:DetectFolder(a:templateFile)
+    let indexFile = s:FindIndexFile(a:templateFile)
 
     if strlen(scriptFile) > 0
         execute ':new ' . scriptFile
@@ -479,13 +479,13 @@ function! s:LayoutComponent(vueFile, includeCss)
             if withFolder
                 execute ':vnew ' . indexFile
                 execute ':new ' . cssFile
-                execute ':new ' . a:vueFile
+                execute ':new ' . a:templateFile
             else
                 execute ':vnew ' . cssFile
-                execute ':new ' . a:vueFile
+                execute ':new ' . a:templateFile
             endif
         else
-            execute ':vnew ' . a:vueFile
+            execute ':vnew ' . a:templateFile
         endif
     else
         if a:includeCss && strlen(cssFile) > 0
@@ -493,24 +493,24 @@ function! s:LayoutComponent(vueFile, includeCss)
             execute ':only'
             if withFolder
                 execute ':vnew ' . indexFile
-                execute ':new ' . a:vueFile
+                execute ':new ' . a:templateFile
             else
-                execute ':vnew ' . a:vueFile
+                execute ':vnew ' . a:templateFile
             endif
         else
             echomsg 'There is no script/style file'
-            " execute ':new ' . a:vueFile
+            " execute ':new ' . a:templateFile
             " execute ':only'
         endif
     endif
 
     if exists('*timer_start')
-        call timer_start(1000, 'VueLayoutComponentEnd')
+        call timer_start(1000, 'KitLayoutComponentEnd')
     endif
 endfunction
 
-function! s:FindVueFile(prefix)
-    for extension in s:supportVueExtensionList
+function! s:FindTemplateFile(prefix)
+    for extension in s:supportTemplateExtensionList
         let file = a:prefix . '.' . extension
         if filereadable(file)
             return file
@@ -519,35 +519,35 @@ function! s:FindVueFile(prefix)
     return ''
 endfunction
 
-function! s:GetVueFileByFile(file)
+function! s:GetTemplateFileByFile(file)
     let extension = fnamemodify(a:file, ':e')
     let isIndexFile = s:IsIndexFile(a:file)
 
-    let vueFile = ''
+    let templateFile = ''
 
     if isIndexFile
         let componentName = s:GetComponentNameFromIndex(a:file)
         let prefix = fnamemodify(a:file, ':p:h') . '/' . componentName
-        let vueFile = s:FindVueFile(prefix)
-    elseif index(s:supportVueExtensionList, extension) > -1
-        let vueFile = a:file
+        let templateFile = s:FindTemplateFile(prefix)
+    elseif index(s:supportTemplateExtensionList, extension) > -1
+        let templateFile = a:file
     elseif index(s:supportCssExtensionList, extension) > -1
         let cssFile = fnamemodify(a:file, ':r')
         let cssFileWithoutMiddle = fnamemodify(cssFile, ':r')
-        let vueFile = s:FindVueFile(cssFileWithoutMiddle)
+        let templateFile = s:FindTemplateFile(cssFileWithoutMiddle)
     elseif index(s:supportScriptExtensionList, extension) > -1
         let scriptFile = fnamemodify(a:file, ':r')
         let scriptFileWithoutMiddle = fnamemodify(scriptFile, ':r')
-        let vueFile = s:FindVueFile(scriptFileWithoutMiddle)
+        let templateFile = s:FindTemplateFile(scriptFileWithoutMiddle)
     endif
 
-    return vueFile
+    return templateFile
 endfunction
 
-function! s:GetVueFileByCurrent()
+function! s:GetTemplateFileByCurrent()
     let file = expand('%')
-    let vueFile = s:GetVueFileByFile(file)
-    return vueFile
+    let templateFile = s:GetTemplateFileByFile(file)
+    return templateFile
 endfunction
 
 
@@ -556,52 +556,52 @@ function! s:LayoutCurrentComponent()
         return
     endif
 
-    let vueFile = s:GetVueFileByCurrent()
-    if strlen(vueFile) > 0
-        call s:LayoutComponent(vueFile, 1)
+    let templateFile = s:GetTemplateFileByCurrent()
+    if strlen(templateFile) > 0
+        call s:LayoutComponent(templateFile, 1)
     else
-        echomsg 'Can not find vue file for current buffer'
+        echomsg 'Can not find template file for current buffer'
     endif
 endfunction
 
-function! s:LayoutVueAndScript()
+function! s:LayoutTemplateAndScript()
     if &diff || s:isDiffMode
         return
     endif
 
-    let vueFile = s:GetVueFileByCurrent()
+    let templateFile = s:GetTemplateFileByCurrent()
 
-    if strlen(vueFile) > 0
-        call s:LayoutComponent(vueFile, 0)
+    if strlen(templateFile) > 0
+        call s:LayoutComponent(templateFile, 0)
     else
-        echomsg 'Can not find vue file for current buffer'
+        echomsg 'Can not find template file for current buffer'
     endif
 endfunction
 
-function! s:GetNextFile(vueFile, currentType)
+function! s:GetNextFile(templateFile, currentType)
     let nextFile = ''
 
     if a:currentType ==# 'index'
-        let nextFile = a:vueFile
+        let nextFile = a:templateFile
     elseif a:currentType ==# 'vue'
-        let nextFile = s:FindStyleFile(a:vueFile)
+        let nextFile = s:FindStyleFile(a:templateFile)
     elseif a:currentType ==# 'css'
-        let nextFile = s:FindScriptFile(a:vueFile)
+        let nextFile = s:FindScriptFile(a:templateFile)
     elseif a:currentType ==# 'script'
-        let nextFile = s:FindIndexFile(a:vueFile)
+        let nextFile = s:FindIndexFile(a:templateFile)
     endif
 
     return nextFile
 endfunction
 
-" @param {String} vueFile
+" @param {String} templateFile
 " @param {String} currentType  valid values: vue, css, script, index
-function! s:SwitchFile(vueFile, currentType)
+function! s:SwitchFile(templateFile, currentType)
     let orderList = ['index', 'vue', 'css', 'script']
     let targetFile = ''
 
     for type in orderList
-        let nextFile = s:GetNextFile(a:vueFile, type)
+        let nextFile = s:GetNextFile(a:templateFile, type)
         if !empty(nextFile)
             let targetFile = nextFile
             break
@@ -619,11 +619,11 @@ function! s:SwitchCurrentComponent()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
 
-    let vueFile = s:GetVueFileByFile(file)
+    let templateFile = s:GetTemplateFileByFile(file)
     let currentType = ''
     if s:IsIndexFile(file)
         let currentType = 'index'
-    elseif index(s:supportVueExtensionList, extension) > -1
+    elseif index(s:supportTemplateExtensionList, extension) > -1
         let currentType = 'vue'
     elseif index(s:supportCssExtensionList, extension) > -1
         let currentType = 'css'
@@ -631,10 +631,10 @@ function! s:SwitchCurrentComponent()
         let currentType = 'script'
     endif
 
-    if strlen(vueFile) > 0
-        call s:SwitchFile(vueFile, currentType)
+    if strlen(templateFile) > 0
+        call s:SwitchFile(templateFile, currentType)
     else
-        echomsg 'Can not find vue file for current buffer'
+        echomsg 'Can not find template file for current buffer'
     endif
 endfunction
 
@@ -698,8 +698,8 @@ function! s:RenameFolderName(folder, newFolder, bang)
     return 1
 endfunction
 
-function! s:GetComponentName(vueFile)
-    let name = fnamemodify(a:vueFile, ':t:r')
+function! s:GetComponentName(templateFile)
+    let name = fnamemodify(a:templateFile, ':t:r')
     return name
 endfunction
 
@@ -708,8 +708,8 @@ function! s:GetComponentNameFromIndex(indexFile)
     return name
 endfunction
 
-function! s:GetFolderName(vueFile)
-    let name = fnamemodify(a:vueFile, ':h:t')
+function! s:GetFolderName(templateFile)
+    let name = fnamemodify(a:templateFile, ':h:t')
     return name
 endfunction
 
@@ -722,18 +722,18 @@ function! s:ComposeFilePath(filePath, componentName, newComponentName)
 endfunction
 
 " @return {string}
-function s:Rename3Files(vueFile, newComponentName, bang)
-    let componentName = s:GetComponentName(a:vueFile)
-    let vueFileNew = s:ComposeFilePath(a:vueFile, componentName, a:newComponentName)
-    let isRenameOk = s:RenameFile(a:vueFile, vueFileNew, a:bang)
+function s:Rename3Files(templateFile, newComponentName, bang)
+    let componentName = s:GetComponentName(a:templateFile)
+    let templateFileNew = s:ComposeFilePath(a:templateFile, componentName, a:newComponentName)
+    let isRenameOk = s:RenameFile(a:templateFile, templateFileNew, a:bang)
 
     if isRenameOk
-        call s:UpdateComponentNameInFile(vueFileNew, componentName, a:newComponentName)
+        call s:UpdateComponentNameInFile(templateFileNew, componentName, a:newComponentName)
     else
         return ''
     endif
 
-    let styleFile = s:FindStyleFile(a:vueFile)
+    let styleFile = s:FindStyleFile(a:templateFile)
     if strlen(styleFile) > 0
         let styleFileNew = s:ComposeFilePath(styleFile, componentName, a:newComponentName)
         let isRenameOk = s:RenameFile(styleFile, styleFileNew, a:bang)
@@ -742,7 +742,7 @@ function s:Rename3Files(vueFile, newComponentName, bang)
         endif
     endif
 
-    let scriptFile = s:FindScriptFile(a:vueFile)
+    let scriptFile = s:FindScriptFile(a:templateFile)
     if strlen(scriptFile) > 0
         let scriptFileNew = s:ComposeFilePath(scriptFile, componentName, a:newComponentName)
         let isRenameOk = s:RenameFile(scriptFile, scriptFileNew, a:bang)
@@ -758,21 +758,21 @@ function s:Rename3Files(vueFile, newComponentName, bang)
         \ 'tagname': 'script',
         \}
     let tagInfoList = [styleConfig, scriptConfig]
-    call s:UpdateHtml(vueFileNew, componentName, a:newComponentName, tagInfoList)
-    return vueFileNew
+    call s:UpdateHtml(templateFileNew, componentName, a:newComponentName, tagInfoList)
+    return templateFileNew
 endfunction
 
 
-function! s:RenameComponentWithoutFolder(vueFile, name, bang)
-    let vueFileNew = s:Rename3Files(a:vueFile, a:name, a:bang)
-    if !empty(vueFileNew)
-        call s:LayoutComponent(vueFileNew, 1)
+function! s:RenameComponentWithoutFolder(templateFile, name, bang)
+    let templateFileNew = s:Rename3Files(a:templateFile, a:name, a:bang)
+    if !empty(templateFileNew)
+        call s:LayoutComponent(templateFileNew, 1)
     endif
 endfunction
 
 " @return {0|1}
-function s:UpdateIndexFile(vueFile, componentName, newComponentName, bang)
-    let indexFile = s:FindIndexFile(a:vueFile)
+function s:UpdateIndexFile(templateFile, componentName, newComponentName, bang)
+    let indexFile = s:FindIndexFile(a:templateFile)
     if empty(indexFile)
         echoerr 'Failed to find index file.'
         return 0
@@ -790,41 +790,41 @@ function s:UpdateIndexFile(vueFile, componentName, newComponentName, bang)
     return writeOk
 endfunction
 
-function! s:RenameComponentWithFolder(vueFile, newComponentName, bang)
-    let componentName = s:GetComponentName(a:vueFile)
-    let path = fnamemodify(a:vueFile, ':p:h')
-    let newPath = fnamemodify(a:vueFile, ':p:h:h') . '/' . a:newComponentName
+function! s:RenameComponentWithFolder(templateFile, newComponentName, bang)
+    let componentName = s:GetComponentName(a:templateFile)
+    let path = fnamemodify(a:templateFile, ':p:h')
+    let newPath = fnamemodify(a:templateFile, ':p:h:h') . '/' . a:newComponentName
     let renameFolderOk = s:RenameFolderName(path, newPath, a:bang)
     if !renameFolderOk
-        echoerr 'Failed to rename component to  ' . a:newComponentName . ' : '. a:vueFile
+        echoerr 'Failed to rename component to  ' . a:newComponentName . ' : '. a:templateFile
         return
     endif
 
-    let vueFileName = fnamemodify(a:vueFile, ':p:t')
-    let vueFileAfterRename = newPath . '/' . vueFileName
-    let vueFileNew = s:Rename3Files(vueFileAfterRename, a:newComponentName, a:bang)
-    if empty(vueFileNew)
-        echoerr 'Failed to rename component to  ' . a:newComponentName . ' : '. a:vueFile
+    let templateFileName = fnamemodify(a:templateFile, ':p:t')
+    let templateFileAfterRename = newPath . '/' . templateFileName
+    let templateFileNew = s:Rename3Files(templateFileAfterRename, a:newComponentName, a:bang)
+    if empty(templateFileNew)
+        echoerr 'Failed to rename component to  ' . a:newComponentName . ' : '. a:templateFile
         return
     endif
-    call s:UpdateIndexFile(vueFileAfterRename, componentName, a:newComponentName, a:bang)
-    call s:LayoutComponent(vueFileNew, 1)
+    call s:UpdateIndexFile(templateFileAfterRename, componentName, a:newComponentName, a:bang)
+    call s:LayoutComponent(templateFileNew, 1)
 endfunction
 
 
 function! s:RenameComponent(name, bang)
-    let vueFile = s:GetVueFileByCurrent()
-    if strlen(vueFile) <= 0
-        echoerr 'Can not find vue file for current buffer'
+    let templateFile = s:GetTemplateFileByCurrent()
+    if strlen(templateFile) <= 0
+        echoerr 'Can not find template file for current buffer'
         return
     endif
 
     let theName = trim(a:name)
-    let withFolder = s:DetectFolder(vueFile)
+    let withFolder = s:DetectFolder(templateFile)
     if withFolder
-        call s:RenameComponentWithFolder(vueFile, theName, a:bang)
+        call s:RenameComponentWithFolder(templateFile, theName, a:bang)
     else
-        call s:RenameComponentWithoutFolder(vueFile, theName, a:bang)
+        call s:RenameComponentWithoutFolder(templateFile, theName, a:bang)
     endif
 endfunction
 
@@ -969,9 +969,9 @@ endfunction
 " rename the extension of style/script
 function! s:RenameExtension(extension, bang)
 
-    let vueFile = s:GetVueFileByCurrent()
-    if strlen(vueFile) == 0
-        echoerr 'Can not find vue file for current buffer'
+    let templateFile = s:GetTemplateFileByCurrent()
+    if strlen(templateFile) == 0
+        echoerr 'Can not find template file for current buffer'
         return
     endif
 
@@ -980,10 +980,10 @@ function! s:RenameExtension(extension, bang)
 
 
     if index(s:supportCssExtensionList, a:extension) > -1
-        let filePath = s:FindStyleFile(vueFile)
+        let filePath = s:FindStyleFile(templateFile)
         let isScript = 0
     elseif index(s:supportScriptExtensionList, a:extension) > -1
-        let filePath = s:FindScriptFile(vueFile)
+        let filePath = s:FindScriptFile(templateFile)
     endif
 
     if strlen(filePath) == 0
@@ -1011,10 +1011,10 @@ function! s:RenameExtension(extension, bang)
         \ 'lang': lang
         \ }
     let tagInfoList = [tagConfig]
-    call s:UpdateHtml(vueFile, nameWithExt, nameWithNewExt, tagInfoList)
+    call s:UpdateHtml(templateFile, nameWithExt, nameWithNewExt, tagInfoList)
 
     if isScript
-        let indexFile = s:FindIndexFile(vueFile)
+        let indexFile = s:FindIndexFile(templateFile)
         if !empty(indexFile)
             let indexFileNew = s:ChangeExtension(indexFile, a:extension)
             if indexFileNew !=# indexFile
@@ -1023,7 +1023,7 @@ function! s:RenameExtension(extension, bang)
         endif
     endif
 
-    call s:LayoutComponent(vueFile, 1)
+    call s:LayoutComponent(templateFile, 1)
 endfunction
 
 
@@ -1371,11 +1371,11 @@ function! s:RemoveFile(filePath, removedList)
     endif
 endfunction
 
-function! s:RemoveComponentWithVueFile(vueFile)
-    let withFolder = s:DetectFolder(a:vueFile)
+function! s:RemoveComponentWithTemplateFile(templateFile)
+    let withFolder = s:DetectFolder(a:templateFile)
 
     if withFolder
-        let folderPath = fnamemodify(a:vueFile, ':p:h')
+        let folderPath = fnamemodify(a:templateFile, ':p:h')
         let result = -1
         if isdirectory(folderPath)
             let result = delete(folderPath, 'rf')
@@ -1386,12 +1386,12 @@ function! s:RemoveComponentWithVueFile(vueFile)
             echo 'Success remove component of current buffer.'
         endif
     else
-        let scriptFile = s:FindScriptFile(a:vueFile)
-        let cssFile = s:FindStyleFile(a:vueFile)
+        let scriptFile = s:FindScriptFile(a:templateFile)
+        let cssFile = s:FindStyleFile(a:templateFile)
         let removedFileList = []
         call s:RemoveFile(scriptFile, removedFileList)
         call s:RemoveFile(cssFile, removedFileList)
-        call s:RemoveFile(a:vueFile, removedFileList)
+        call s:RemoveFile(a:templateFile, removedFileList)
 
         if len(removedFileList)
             execute ':enew'
@@ -1404,11 +1404,11 @@ function! s:RemoveComponentWithVueFile(vueFile)
 endfunction
 
 function! s:RemoveCurrentComponent()
-    let vueFile = s:GetVueFileByCurrent()
-    if strlen(vueFile) > 0
-        call s:RemoveComponentWithVueFile(vueFile)
+    let templateFile = s:GetTemplateFileByCurrent()
+    if strlen(templateFile) > 0
+        call s:RemoveComponentWithTemplateFile(templateFile)
     else
-        echomsg 'Can not find vue file for current buffer.'
+        echomsg 'Can not find template file for current buffer.'
     endif
 endfunction
 
@@ -1425,53 +1425,53 @@ function! s:MoveFileToFolder(filePath, folderPath, movedFileList)
     call s:RemoveFile(a:filePath, a:movedFileList)
 endfunction
 
-function! s:BuildIndexFile(vueFile, scriptFileExt)
-    let indexFilePath = s:MakeIndexFile(a:vueFile, a:scriptFileExt)
+function! s:BuildIndexFile(templateFile, scriptFileExt)
+    let indexFilePath = s:MakeIndexFile(a:templateFile, a:scriptFileExt)
     if strlen(indexFilePath) > 0
-        let templateDir = s:FindTemplateDirWithType(a:vueFile)
-        let componentName = s:GetComponentName(a:vueFile)
+        let templateDir = s:FindTemplateDirWithType(a:templateFile)
+        let componentName = s:GetComponentName(a:templateFile)
         let componentNameCamel = s:Camelize(componentName)
-        let vueExtension = fnamemodify(a:vueFile, ':e')
+        let templateExtension = fnamemodify(a:templateFile, ':e')
 
-        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', vueExtension)
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
     endif
 endfunction
 
-function! s:FolderizeComponentWithVueFile(vueFile)
-    let withFolder = s:DetectFolder(a:vueFile)
+function! s:FolderizeComponentWithTemplateFile(templateFile)
+    let withFolder = s:DetectFolder(a:templateFile)
 
     if withFolder
         echo 'Component of current buffer is already in folder structure.'
         return
     endif
 
-    let folderPath = fnamemodify(a:vueFile, ':p:r')
+    let folderPath = fnamemodify(a:templateFile, ':p:r')
     let successToCreateFolder = mkdir(folderPath)
     if successToCreateFolder == 0
         echoerr 'Failed to create folder: ' . folderPath
         return
     endif
 
-    let scriptFile = s:FindScriptFile(a:vueFile)
-    let cssFile = s:FindStyleFile(a:vueFile)
+    let scriptFile = s:FindScriptFile(a:templateFile)
+    let cssFile = s:FindStyleFile(a:templateFile)
     let movedFileList = []
 
     call s:MoveFileToFolder(scriptFile, folderPath, movedFileList)
     call s:MoveFileToFolder(cssFile, folderPath, movedFileList)
-    call s:MoveFileToFolder(a:vueFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(a:templateFile, folderPath, movedFileList)
 
     if len(movedFileList) > 0
-        let vueFileName = fnamemodify(a:vueFile, ':t')
-        let vueFileNew = folderPath . '/' . vueFileName
+        let templateFileName = fnamemodify(a:templateFile, ':t')
+        let templateFileNew = folderPath . '/' . templateFileName
 
         let scriptFileExt = 'ts'
         if strlen(scriptFile) > 0
             let scriptFileExt = fnamemodify(scriptFile, ':e')
         endif
 
-        call s:BuildIndexFile(vueFileNew, scriptFileExt)
+        call s:BuildIndexFile(templateFileNew, scriptFileExt)
 
-        call s:LayoutComponent(vueFileNew, 1)
+        call s:LayoutComponent(templateFileNew, 1)
 
         echo 'Success to folderize component of current buffer.'
     else
@@ -1481,43 +1481,43 @@ function! s:FolderizeComponentWithVueFile(vueFile)
 endfunction
 
 function! s:FolderizeCurrentComponent()
-    let vueFile = s:GetVueFileByCurrent()
-    if strlen(vueFile) > 0
-        call s:FolderizeComponentWithVueFile(vueFile)
+    let templateFile = s:GetTemplateFileByCurrent()
+    if strlen(templateFile) > 0
+        call s:FolderizeComponentWithTemplateFile(templateFile)
     else
-        echomsg 'Can not find vue file for current buffer.'
+        echomsg 'Can not find template file for current buffer.'
     endif
 endfunction
 
-function! VueLayoutAuto(timer)
+function! KitLayoutAuto(timer)
     let isOpen =  s:isQuickFixOpened()
     if isOpen
         return
     endif
 
     if s:autoLayout == 1
-        call s:LayoutVueAndScript()
+        call s:LayoutTemplateAndScript()
     elseif s:autoLayout == 2
         call s:LayoutCurrentComponent()
     endif
 endfunction
 
-function! VueLayoutComponentEnd(timer)
+function! KitLayoutComponentEnd(timer)
     call s:ResetStatus()
 endfunction
 
-function! VueLayoutAutoWithDelay()
+function! KitLayoutAutoWithDelay()
     if s:kit_component_layout_doing
         return
     endif
-    call timer_start(10, 'VueLayoutAuto')
+    call timer_start(10, 'KitLayoutAuto')
 endfunction
 
-function! VueRenameCompleter(argLead, cmdLine, cursorPos)
-    let vueFile = s:GetVueFileByCurrent()
+function! CompRenameCompleter(argLead, cmdLine, cursorPos)
+    let templateFile = s:GetTemplateFileByCurrent()
 
-    if strlen(vueFile) > 0
-        let componentName = s:GetComponentName(vueFile)
+    if strlen(templateFile) > 0
+        let componentName = s:GetComponentName(templateFile)
         if strlen(componentName) > 0
             let trimed = trim(a:argLead)
             if strlen(trimed) > 0
@@ -1533,7 +1533,7 @@ function! VueRenameCompleter(argLead, cmdLine, cursorPos)
     return []
 endfunction
 
-function! VueRenameExtCompleter(argLead, cmdLine, cursorPos)
+function! CompRenameExtCompleter(argLead, cmdLine, cursorPos)
     let trimed = trim(a:argLead)
     if strlen(trimed) == 0
         return s:supportExtensionFullList
@@ -1552,28 +1552,28 @@ endfunction
 
 
 
-command! -nargs=+ -complete=file VueCreate call s:CreateComponent(<f-args>)
-command! -nargs=+ -complete=file VueCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! VueLayout call s:LayoutCurrentComponent()
-command! VueLay call s:LayoutVueAndScript()
-command! VueAlt call s:SwitchCurrentComponent()
-command! VueReset call s:ResetStatus()
+command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
+command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
+command! CompLayout call s:LayoutCurrentComponent()
+command! CompLay call s:LayoutTemplateAndScript()
+command! CompAlt call s:SwitchCurrentComponent()
+command! CompReset call s:ResetStatus()
 
-" :VueRename[!] {newame}
-command! -nargs=1 -complete=customlist,VueRenameCompleter -bang VueRename :call s:RenameComponent("<args>", "<bang>")
-" :VueRenameExt[!] {extension}
-command! -nargs=1 -complete=customlist,VueRenameExtCompleter -bang VueRenameExt :call s:RenameExtension("<args>", "<bang>")
+" :CompRename[!] {newame}
+command! -nargs=1 -complete=customlist,CompRenameCompleter -bang CompRename :call s:RenameComponent("<args>", "<bang>")
+" :CompRenameExt[!] {extension}
+command! -nargs=1 -complete=customlist,CompRenameExtCompleter -bang CompRenameExt :call s:RenameExtension("<args>", "<bang>")
 
-command! -nargs=0 VueRemove :call s:RemoveCurrentComponent()
-command! -nargs=0 VueFolderize :call s:FolderizeCurrentComponent()
+command! -nargs=0 CompRemove :call s:RemoveCurrentComponent()
+command! -nargs=0 CompFolderize :call s:FolderizeCurrentComponent()
 
 
 
 if exists('*timer_start')
-    augroup vuecomponent
+    augroup componentkit
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy  call VueLayoutAutoWithDelay()
-        autocmd BufReadPost index.ts,index.js  call VueLayoutAutoWithDelay()
+        autocmd BufReadPost *.vue,*.wpy  call KitLayoutAutoWithDelay()
+        autocmd BufReadPost index.ts,index.js  call KitLayoutAutoWithDelay()
     augroup END
 endif
 
