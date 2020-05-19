@@ -385,9 +385,6 @@ endfunction
 " @param {String} [styleExtension]
 " function! s:CreateComponent(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponent(...)
-
-
-
     let templateFile = s:CompleteExtension(a:1)
     let config = s:ParseCreateParams(a:000, templateFile, 0)
 
@@ -425,7 +422,6 @@ endfunction
 " @param {String} [styleExtension]
 " function! s:CreateComponentWithFolder(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponentWithFolder(...)
-
     let completed = s:CompleteExtension(a:1)
     let path = fnamemodify(completed, ':p:r')
     let templateFileName = fnamemodify(completed, ':p:t')
@@ -433,11 +429,9 @@ function! s:CreateComponentWithFolder(...)
 
     let config = s:ParseCreateParams(a:000, templateFile, 1)
 
-
     let scriptExtension = get(config, 'scriptExtension')
     let styleExtension = get(config, 'styleExtension')
     let templateExtension = get(config, 'templateExtension')
-
 
     let scriptFile = s:MakeScriptFile(templateFile, scriptExtension)
     let cssFile = s:MakeCssFile(templateFile, styleExtension)
@@ -536,13 +530,13 @@ function! s:LayoutComponent(templateFile, includeCss)
         endif
     else
         if a:includeCss && strlen(cssFile) > 0
-            execute ':new ' . cssFile
+            execute ':new ' . a:templateFile
             execute ':only'
             if withFolder
                 execute ':vnew ' . indexFile
-                execute ':new ' . a:templateFile
+                execute ':new ' . cssFile
             else
-                execute ':vnew ' . a:templateFile
+                execute ':vnew ' . cssFile
             endif
         else
             echomsg 'There is no script/style file'
