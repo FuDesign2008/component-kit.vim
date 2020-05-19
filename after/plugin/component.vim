@@ -2,14 +2,14 @@
 " insert jira content into markdown as a list item with link
 "
 
-if &compatible || exists('b:vue_component')
+if &compatible || exists('b:kit_component')
     finish
 endif
-let b:vue_component = 1
+let b:kit_component = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-if exists('s:vue_component')
+if exists('s:kit_component')
     finish
 endif
 
@@ -18,7 +18,7 @@ endif
 let s:scriptDir= expand('<sfile>:p:h')
 let s:isDiffMode = &diff
 
-let s:vue_component = 1
+let s:kit_component = 1
 
 " use when creating  and finding component files
 let s:middleName = 'comp'
@@ -29,7 +29,7 @@ let s:styleExtension = 'css'
 
 let s:autoLayout = 0
 
-let s:vue_component_layout_doing = 0
+let s:kit_component_layout_doing = 0
 
 " only use when finding component files
 "
@@ -50,20 +50,20 @@ call extend(s:supportExtensionFullList, s:supportScriptExtensionList)
 call extend(s:supportExtensionFullList, s:supportCssExtensionList)
 
 
-if exists('g:vue_component_middle_name') && strlen(g:vue_component_middle_name) > 0
-    let s:middleName = g:vue_component_middle_name
+if exists('g:kit_component_middle_name') && strlen(g:kit_component_middle_name) > 0
+    let s:middleName = g:kit_component_middle_name
 endif
 
-if exists('g:vue_component_script_extension') && strlen(g:vue_component_script_extension) > 0
-    let s:scriptExtension = g:vue_component_script_extension
+if exists('g:kit_component_script_extension') && strlen(g:kit_component_script_extension) > 0
+    let s:scriptExtension = g:kit_component_script_extension
 endif
 
-if exists('g:vue_component_css_extension') && strlen(g:vue_component_css_extension) > 0
-    let s:styleExtension = g:vue_component_css_extension
+if exists('g:kit_component_css_extension') && strlen(g:kit_component_css_extension) > 0
+    let s:styleExtension = g:kit_component_css_extension
 endif
 
-if exists('g:vue_component_auto_layout')
-    let s:autoLayout = g:vue_component_auto_layout
+if exists('g:kit_component_auto_layout')
+    let s:autoLayout = g:kit_component_auto_layout
 endif
 
 if index(s:supportScriptExtensionList, s:scriptExtension) == -1
@@ -290,15 +290,15 @@ endfunction
 
 " @return {String}
 function! s:FindTemplateDir()
-    if exists('g:vue_component_template_dir')
-        if g:vue_component_template_dir ==# 'built-in'
+    if exists('g:kit_component_template_dir')
+        if g:kit_component_template_dir ==# 'built-in'
             return s:scriptDir . '/' . 'templates'
         endif
-        if !isdirectory(g:vue_component_template_dir)
-            echoerr 'g:vue_component_template_dir is not a directory: ' . g:vue_component_template_dir
+        if !isdirectory(g:kit_component_template_dir)
+            echoerr 'g:kit_component_template_dir is not a directory: ' . g:kit_component_template_dir
             return ''
         endif
-        return g:vue_component_template_dir
+        return g:kit_component_template_dir
     else
         let templateDir = s:findTemplateDirUp()
         if strlen(templateDir) > 0
@@ -306,7 +306,7 @@ function! s:FindTemplateDir()
         endif
     endif
 
-    echoerr 'Can not find .vue-component-template directory, please set g:vue_component_template_dir in .vimrc'
+    echoerr 'Can not find .vue-component-template directory, please set g:kit_component_template_dir in .vimrc'
     return ''
 endfunction
 
@@ -461,10 +461,10 @@ endfunction
 "@param {0|1} includeCss
 function! s:LayoutComponent(vueFile, includeCss)
     if exists('*timer_start')
-       if s:vue_component_layout_doing
+       if s:kit_component_layout_doing
             return
         endif
-        let s:vue_component_layout_doing = 1
+        let s:kit_component_layout_doing = 1
     endif
 
     let scriptFile = s:FindScriptFile(a:vueFile)
@@ -639,7 +639,7 @@ function! s:SwitchCurrentComponent()
 endfunction
 
 function! s:ResetStatus()
-    let s:vue_component_layout_doing = 0
+    let s:kit_component_layout_doing = 0
 endfunction
 
 
@@ -1507,7 +1507,7 @@ function! VueLayoutComponentEnd(timer)
 endfunction
 
 function! VueLayoutAutoWithDelay()
-    if s:vue_component_layout_doing
+    if s:kit_component_layout_doing
         return
     endif
     call timer_start(10, 'VueLayoutAuto')
