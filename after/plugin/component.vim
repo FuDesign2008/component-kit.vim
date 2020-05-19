@@ -19,7 +19,7 @@ let s:isDiffMode = &diff
 let s:kit_component = 1
 
 " use when creating  and finding component files
-let s:middleName = 'comp'
+let s:middleName = { 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'module' }
 
 " only use when creating component files
 let s:scriptExtension = 'js'
@@ -213,7 +213,9 @@ function! s:MakeCssFile(templateFile, extension)
     if theExtension ==# ''
         let theExtension = s:styleExtension
     endif
-    let cssFile = fnamemodify(a:templateFile, ':r') . '.' . s:middleName .'.' . theExtension
+    let templateExtension = fnamemodify(a:templateFile, ':e')
+    let middleName = get(s:middleName, templateExtension)
+    let cssFile = fnamemodify(a:templateFile, ':r') . '.' . middleName .'.' . theExtension
     return cssFile
 endfunction
 
@@ -236,7 +238,9 @@ function! s:MakeScriptFile(templateFile, extension)
     if theExtension ==# ''
         let theExtension = s:scriptExtension
     endif
-    let scriptFile = fnamemodify(a:templateFile, ':r') . '.' . s:middleName . '.' . theExtension
+    let templateExtension = fnamemodify(a:templateFile, ':e')
+    let middleName = get(s:middleName, templateExtension)
+    let scriptFile = fnamemodify(a:templateFile, ':r') . '.' . middleName . '.' . theExtension
     return scriptFile
 endfunction
 
@@ -352,7 +356,7 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
 
     let cssExtension = g:kit_component_css_extension
     let scriptExtension = g:kit_component_script_extension
-    let middleName = g:kit_component_middle_name
+    let middleName = get(s:middleName, templateExtension)
 
     if length == 2 || length == 3 || length == 4
         let counter = 1
@@ -1613,7 +1617,7 @@ command! -nargs=0 CompFolderize :call s:FolderizeCurrentComponent()
 if exists('*timer_start')
     augroup componentkit
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy  call KitLayoutAutoWithDelay()
+        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx  call KitLayoutAutoWithDelay()
         autocmd BufReadPost index.ts,index.js  call KitLayoutAutoWithDelay()
     augroup END
 endif

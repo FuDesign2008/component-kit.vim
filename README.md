@@ -4,7 +4,7 @@ Tools for generate/refract component
 
 ## Config
 
-1.  `g:kit_component_middle_name`: The middle name for creating & finding script/style file, default is `'comp'`
+1.  `g:kit_component_middle_name`: The middle name for creating & finding script/style file, default is `{ 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'module' }`
 1.  `g:kit_component_script_extension`: The extension for creating & finding script file, default is `'js'`
 1.  `g:kit_component_css_extension`: The extension for creating & finding style file, default is `'css'`
 1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.kit-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `TEMPLATE_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
