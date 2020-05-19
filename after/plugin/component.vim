@@ -1,6 +1,4 @@
-"
-" insert jira content into markdown as a list item with link
-"
+scriptencoding utf-8
 
 if &compatible || exists('b:kit_component')
     finish
@@ -34,8 +32,8 @@ let s:kit_component_layout_doing = 0
 " only use when finding component files
 "
 " wpy is used for https://github.com/Tencent/wepy
-let s:supportTemplateExtensionList = ['vue', 'wpy']
-let s:supportScriptExtensionList = [ 'js', 'ts', 'jsx', 'json']
+let s:supportTemplateExtensionList = ['vue', 'wpy', 'tsx', 'jsx']
+let s:supportScriptExtensionList = [ 'js', 'ts', 'json']
 let s:supportCssExtensionList = ['css', 'scss', 'less']
 let s:extensionLangMap = {
             \'js': 'javascript',
@@ -171,11 +169,11 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     endif
 
 
-    " vue or script file
+    " template or script file
     let newText = substitute(originalText, a:componentName, a:componentNameNew  , 'g')
     let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
 
-    " vue or style file
+    " template or style file
     let className = s:Camelize(a:componentName)
     let classNameNew = s:Camelize(a:componentNameNew)
     let newText = substitute(newText, className, classNameNew  , 'g')
@@ -273,7 +271,7 @@ endfunction
 " @return {String}
 function! s:findTemplateDirUp()
     let currentDir = fnamemodify(getcwd(), ':p')
-    let templateDirName = '.vue-component-template'
+    let templateDirName = '.kit-component-template'
 
     " the length of the root path  will more than 1
     while strlen(currentDir) > 1
@@ -306,7 +304,7 @@ function! s:FindTemplateDir()
         endif
     endif
 
-    echoerr 'Can not find .vue-component-template directory, please set g:kit_component_template_dir in .vimrc'
+    echoerr 'Can not find .kit-component-template directory, please set g:kit_component_template_dir in .vimrc'
     return ''
 endfunction
 
@@ -341,28 +339,77 @@ function! s:Camelize(str)
     return camelized
 endfunction
 
+" function! s:ParseCreateParams(templateFile, scriptOrStyleExtension?, styleOrScriptExtension?, middleName?)
+function! s:ParseCreateParams(args, templateFile, withFolder)
+    let result = {}
+
+    if a:templateFile ==# ''
+        return result
+    endif
+
+    let templateExtension = fnamemodify(a:templateFile, ':e')
+    let length = len(a:args)
+
+    let cssExtension = g:kit_component_css_extension
+    let scriptExtension = g:kit_component_script_extension
+    let middleName = g:kit_component_middle_name
+
+    if length == 2 || length == 3 || length == 4
+        let counter = 1
+        while counter < length
+            let item = get(a:args, counter)
+            if index(s:supportCssExtensionList, item) > -1
+                let cssExtension = item
+            elseif index(s:supportScriptExtensionList) > -1
+                let scriptExtension = item
+            else
+                let middleName = item
+            endif
+            let counter += 1
+        endwhile
+    else
+        return result
+    endif
+
+
+    let result['templateFile'] =  a:templateFile
+    let result['tempateExtension'] = templateExtension
+    let result['middleName'] = middleName
+    let result['cssExtension'] = cssExtension
+    let result['scriptExtension'] = scriptExtension
+    return result
+endfunction
+
 " @param {String} templateFile
 " @param {String} [scriptExtension]
 " @param {String} [styleExtension]
 " function! s:CreateComponent(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponent(...)
-    let argsCount = a:0
+
+
+
     let templateFile = s:CompleteExtension(a:1)
-    let templateExtension = fnamemodify(templateFile, ':e')
+    let config = s:ParseCreateParams(a:000, templateFile, 0)
 
-    let scriptExtension = s:scriptExtension
-    if argsCount >= 2 && strlen(a:2) > 1
-        let scriptExtension = a:2
+    if empty(config)
+        echomsg 'Parameter is not valid'
+        return
     endif
 
-    let styleExtension =  s:styleExtension
-    if argsCount >= 3 && strlen(a:3) > 1
-        let styleExtension = a:3
-    endif
+    let scriptExtension = get(config, 'scriptExtension')
+    let styleExtension = get(config, 'styleExtension')
+    let templateExtension = get(config, 'templateExtension')
 
     let scriptFile = s:MakeScriptFile(templateFile, scriptExtension)
     let cssFile = s:MakeCssFile(templateFile, styleExtension)
-    let fileList = [templateFile, scriptFile, cssFile]
+
+    if templateExtension ==# 'tsx' || templateExtension ==# 'jsx'
+        " *.tsx/*.jsx 不需要 script
+        let fileList = [templateFile, cssFile]
+    else
+        let fileList = [templateFile, scriptFile, cssFile]
+    endif
+
 
     let isCreateOk = s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styleExtension, templateExtension)
     if !isCreateOk
@@ -378,32 +425,32 @@ endfunction
 " @param {String} [styleExtension]
 " function! s:CreateComponentWithFolder(templateFile, scriptExtension, styleExtension)
 function! s:CreateComponentWithFolder(...)
-    let argsCount = a:0
+
     let completed = s:CompleteExtension(a:1)
     let path = fnamemodify(completed, ':p:r')
     let templateFileName = fnamemodify(completed, ':p:t')
     let templateFile = path . '/' . templateFileName
-    let templateExtension = fnamemodify(templateFile, ':e')
 
-    let scriptExtension = s:scriptExtension
-    if argsCount >= 2 && strlen(a:2) > 1
-        let scriptExtension = a:2
-    endif
+    let config = s:ParseCreateParams(a:000, templateFile, 1)
 
-    let styleExtension =  s:styleExtension
-    if argsCount >= 3 && strlen(a:3) > 1
-        let styleExtension = a:3
-    endif
+
+    let scriptExtension = get(config, 'scriptExtension')
+    let styleExtension = get(config, 'styleExtension')
+    let templateExtension = get(config, 'templateExtension')
+
 
     let scriptFile = s:MakeScriptFile(templateFile, scriptExtension)
     let cssFile = s:MakeCssFile(templateFile, styleExtension)
+    let indexFile = s:MakeIndexFile(templateFile, scriptExtension)
 
 
     if templateExtension ==# 'wpy'
         " *.wpy 不需要 index
         let fileList = [templateFile, scriptFile, cssFile]
+    elseif templateExtension ==# 'tsx' || templateExtension ==# 'jsx'
+        " *.tsx/*.jsx 不需要 script
+        let fileList = [indexFile, templateFile, cssFile]
     else
-        let indexFile = s:MakeIndexFile(templateFile, scriptExtension)
         let fileList = [indexFile, templateFile, scriptFile, cssFile]
     endif
 
@@ -583,7 +630,7 @@ function! s:GetNextFile(templateFile, currentType)
 
     if a:currentType ==# 'index'
         let nextFile = a:templateFile
-    elseif a:currentType ==# 'vue'
+    elseif a:currentType ==# 'template'
         let nextFile = s:FindStyleFile(a:templateFile)
     elseif a:currentType ==# 'css'
         let nextFile = s:FindScriptFile(a:templateFile)
@@ -595,9 +642,9 @@ function! s:GetNextFile(templateFile, currentType)
 endfunction
 
 " @param {String} templateFile
-" @param {String} currentType  valid values: vue, css, script, index
+" @param {String} currentType  valid values: template, css, script, index
 function! s:SwitchFile(templateFile, currentType)
-    let orderList = ['index', 'vue', 'css', 'script']
+    let orderList = ['index', 'template', 'css', 'script']
     let targetFile = ''
 
     for type in orderList
@@ -624,7 +671,7 @@ function! s:SwitchCurrentComponent()
     if s:IsIndexFile(file)
         let currentType = 'index'
     elseif index(s:supportTemplateExtensionList, extension) > -1
-        let currentType = 'vue'
+        let currentType = 'template'
     elseif index(s:supportCssExtensionList, extension) > -1
         let currentType = 'css'
     elseif index(s:supportScriptExtensionList, extension) > -1
