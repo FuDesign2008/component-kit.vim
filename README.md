@@ -81,3 +81,11 @@ This toolkit supports vue-like component:
 
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
+
+## TODO
+
+1. 增加对 react 的支持
+1. 分层
+    - `component-kit`: npm 包，支持命令行处理
+    - `component-kit.vim`: vim 编辑器支持
+    - `component-kit-vsc`: vs code 编辑器支持
