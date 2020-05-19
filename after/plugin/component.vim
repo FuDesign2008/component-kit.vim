@@ -141,6 +141,7 @@ endfunction
 function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, templateExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(templateFilePath)
+    let middleName = get(s:middleName, a:templateExtension)
 
     let content = ''
     let dateAsString = s:FormatDate()
@@ -149,6 +150,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
         let newText = templateText
         let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
         let newText = substitute(newText, 'component-name', a:componentNameCamel, 'g')
+        let newText = substitute(newText, 'MIDDLE_NAME', middleName, 'g')
         let newText = substitute(newText, 'TEMPLATE_EXTENSION', a:templateExtension, 'g')
         let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
         let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension, 'g')
@@ -343,7 +345,7 @@ function! s:Camelize(str)
     return camelized
 endfunction
 
-" function! s:ParseCreateParams(templateFile, scriptOrStyleExtension?, styleOrScriptExtension?, middleName?)
+" function! s:ParseCreateParams(templateFile, scriptOrStyleExtension?, styleOrScriptExtension?)
 function! s:ParseCreateParams(args, templateFile, withFolder)
     let result = {}
 
@@ -356,9 +358,8 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
 
     let cssExtension = g:kit_component_css_extension
     let scriptExtension = g:kit_component_script_extension
-    let middleName = get(s:middleName, templateExtension)
 
-    if length == 2 || length == 3 || length == 4
+    if length == 2 || length == 3
         let counter = 1
         while counter < length
             let item = get(a:args, counter)
@@ -366,8 +367,6 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
                 let cssExtension = item
             elseif index(s:supportScriptExtensionList) > -1
                 let scriptExtension = item
-            else
-                let middleName = item
             endif
             let counter += 1
         endwhile
@@ -378,7 +377,6 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
 
     let result['templateFile'] =  a:templateFile
     let result['tempateExtension'] = templateExtension
-    let result['middleName'] = middleName
     let result['cssExtension'] = cssExtension
     let result['scriptExtension'] = scriptExtension
     return result
