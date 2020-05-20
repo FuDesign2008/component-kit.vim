@@ -4,8 +4,8 @@
  * @date  CREATE_DATE
  */
 
-import React from 'react'
-import styles from './ComponentName.MIDDLE_NAME.scss'
+import React, {ReactElement} from 'react'
+// import styles from './ComponentName.MIDDLE_NAME.scss'
 
 interface ComponentNameProps {
   propName: string
@@ -38,7 +38,7 @@ class ComponentName extends React.PureComponent<
     this.nameMethod = this.nameMethod.bind(this)
   }
 
-  render() {
+  render(): ReactElement {
     return <div />
   }
 
@@ -46,7 +46,7 @@ class ComponentName extends React.PureComponent<
    *  custom methods
    **************************************************************************/
 
-  nameMethod() {
+  nameMethod(): void {
     // TODO
   }
 
