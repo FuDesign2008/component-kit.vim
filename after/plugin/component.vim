@@ -374,6 +374,13 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
         return result
     endif
 
+    "  针对 *.tsx/*.jsx 特殊处理
+    if templateExtension ==# 'tsx'
+        let scriptExtension = 'ts'
+    elseif templateExtension ==# 'jsx'
+        let scriptExtension = 'js'
+    endif
+
 
     let result['templateFile'] =  a:templateFile
     let result['tempateExtension'] = templateExtension

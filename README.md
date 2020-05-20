@@ -15,7 +15,7 @@ Tools for generate/refract component
 
 ## Commands
 
-1. `CompCreate`: create vue component files, syntax `:CompCreate ./path/to/ComponentName.[extension] [script extension]? [style extension]? [middle name]?`
+1. `CompCreate`: create vue component files, syntax `:CompCreate ./path/to/ComponentName.[extension] [script extension]? [style extension]?`
     - `:CompCreate path/to/Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
     - `:CompCreate path/to/Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
     - `:CompCreate path/to/Example.vue ts` will create `Example.vue`, `Example.comp.ts`, `Example.comp.css` files
