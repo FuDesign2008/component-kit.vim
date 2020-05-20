@@ -4,61 +4,84 @@
  * @date  CREATE_DATE
  */
 
-import { Component } from 'react'
+import React from 'react'
 import styles from './ComponentName.MIDDLE_NAME.scss'
 
 interface ComponentNameProps {
-    propName: string
+  propName: string
 }
 
 interface ComponentNameState {
-    stateName: string
+  stateName: string
 }
 
-class ComponentName extends Component<ComponentNameProps, ComponentNameState> {
-    static defaultProps = {
-        // TODO
+class ComponentName extends React.Component<
+  ComponentNameProps,
+  ComponentNameState
+> {
+  /***************************************************************************
+   *  static properties and methods
+   **************************************************************************/
+
+  static defaultProps = {
+    // TODO
+  }
+
+  constructor(props: ComponentNameProps) {
+    super(props)
+
+    this.state = {
+      stateName: 'TODO',
     }
 
-    constructor(props: ComponentNameProps) {
-        super(props)
+    // bind this
+    this.nameMethod = this.nameMethod.bind(this)
+  }
 
-        this.state = {
-            stateName: 'TODO',
-        }
+  render() {
+    return <div />
+  }
 
-        // bind this
-        this.nameMethod = this.nameMethod.bind(this)
-    }
+  /***************************************************************************
+   *  custom methods
+   **************************************************************************/
 
-    render() {
-        return <div />
-    }
+  nameMethod() {
+    // TODO
+  }
 
-    nameMethod() {
-        // TODO
-    }
+  /***************************************************************************
+   * lifecycle methods
+   **************************************************************************/
 
-    // Lifecycle Methods
+  // componentDidMount() {}
 
-    // componentDidMount() {}
-    // componentDidUpdate(prevProps, prevState, snapshot) {}
-    // componentWillUnmount() {}
+  // componentDidUpdate(prevProps, prevState, snapshot) {}
 
-    // Rarely Used Lifecycle Methods
+  // componentWillUnmount() {}
 
-    // static getDerivedStateFromProps(props, state) {}
-    // shouldComponentUpdate(nextProps, nextState) {}
-    // getSnapshotBeforeUpdate(prevProps, prevState) {}
+  /* rarely used lifecycle methods */
 
-    // Error boundaries
-    // static getDerivedStateFromError(error) {}
-    // componentDidCatch(error, info) {}
+  // static getDerivedStateFromProps(props, state) {}
 
-    // Legacy Lifecycle Methods
-    // UNSAFE_componentWillMount() {}
-    // UNSAFE_componentWillReceiveProps(nextProps) {}
-    // UNSAFE_componentWillUpdate(nextProps, nextState) {}
+  // shouldComponentUpdate(nextProps, nextState) {}
+
+  // getSnapshotBeforeUpdate(prevProps, prevState) {}
+
+  /* error boundaries */
+
+  // static getDerivedStateFromError(error) {}
+
+  // componentDidCatch(error, info) {}
+
+  /* legacy lifecycle methods */
+
+  // UNSAFE_componentWillMount() {}
+
+  // UNSAFE_componentWillReceiveProps(nextProps) {}
+
+  // UNSAFE_componentWillUpdate(nextProps, nextState) {}
 }
 
 export default ComponentName
+
