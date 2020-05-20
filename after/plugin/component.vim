@@ -356,8 +356,8 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
     let templateExtension = fnamemodify(a:templateFile, ':e')
     let length = len(a:args)
 
-    let cssExtension = g:kit_component_css_extension
-    let scriptExtension = g:kit_component_script_extension
+    let cssExtension = s:styleExtension
+    let scriptExtension = s:scriptExtension
 
     if length == 2 || length == 3
         let counter = 1
