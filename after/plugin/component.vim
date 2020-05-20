@@ -359,7 +359,7 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
     let cssExtension = s:styleExtension
     let scriptExtension = s:scriptExtension
 
-    if length == 2 || length == 3
+    if length >= 1 && length <= 3
         let counter = 1
         while counter < length
             let item = get(a:args, counter)
@@ -437,6 +437,12 @@ function! s:CreateComponentWithFolder(...)
     let templateFile = path . '/' . templateFileName
 
     let config = s:ParseCreateParams(a:000, templateFile, 1)
+
+    if empty(config)
+        echomsg 'Parameter is not valid'
+        return
+    endif
+
 
     let scriptExtension = get(config, 'scriptExtension')
     let styleExtension = get(config, 'styleExtension')
@@ -548,9 +554,9 @@ function! s:LayoutComponent(templateFile, includeCss)
                 execute ':vnew ' . cssFile
             endif
         else
-            echomsg 'There is no script/style file'
-            " execute ':new ' . a:templateFile
-            " execute ':only'
+            " echomsg 'There is no script/style file'
+            execute ':new ' . a:templateFile
+            execute ':only'
         endif
     endif
 
