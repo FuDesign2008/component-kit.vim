@@ -383,7 +383,7 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
 
 
     let result['templateFile'] =  a:templateFile
-    let result['tempateExtension'] = templateExtension
+    let result['templateExtension'] = templateExtension
     let result['cssExtension'] = cssExtension
     let result['scriptExtension'] = scriptExtension
     return result
