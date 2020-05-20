@@ -1,50 +1,74 @@
+/**
+ *
+ * @author fuyg
+ * @date  CREATE_DATE
+ */
 import React from 'react'
 import styles from './ComponentName.MIDDLE_NAME.scss'
 
 class ComponentName extends React.Component {
-    static defaultProps = {
-        // TODO
+  /***************************************************************************
+   *  static properties and methods
+   **************************************************************************/
+
+  static defaultProps = {
+    // TODO
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      // TODO
     }
 
-    constructor(props) {
-        super(props)
+    // bind this
+    this.nameMethod = this.nameMethod.bind(this)
+  }
 
-        this.state = {
-            // TODO
-        }
+  render() {
+    return <div />
+  }
 
-        // bind this
-        this.nameMethod = this.nameMethod.bind(this)
-    }
+  /***************************************************************************
+   *  custom methods
+   **************************************************************************/
+  nameMethod() {
+    // TODO
+  }
 
-    render() {
-        return <div />
-    }
+  /***************************************************************************
+   * lifecycle methods
+   **************************************************************************/
 
-    nameMethod() {
-        // TODO
-    }
+  // componentDidMount() {}
 
-    // Lifecycle Methods
+  // componentDidUpdate(prevProps, prevState, snapshot) {}
 
-    // componentDidMount() {}
-    // componentDidUpdate(prevProps, prevState, snapshot) {}
-    // componentWillUnmount() {}
+  // componentWillUnmount() {}
 
-    // Rarely Used Lifecycle Methods
+  /* rarely used lifecycle methods */
 
-    // static getDerivedStateFromProps(props, state) {}
-    // shouldComponentUpdate(nextProps, nextState) {}
-    // getSnapshotBeforeUpdate(prevProps, prevState) {}
+  // static getDerivedStateFromProps(props, state) {}
 
-    // Error boundaries
-    // static getDerivedStateFromError(error) {}
-    // componentDidCatch(error, info) {}
+  // shouldComponentUpdate(nextProps, nextState) {}
 
-    // Legacy Lifecycle Methods
-    // UNSAFE_componentWillMount() {}
-    // UNSAFE_componentWillReceiveProps(nextProps) {}
-    // UNSAFE_componentWillUpdate(nextProps, nextState) {}
+  // getSnapshotBeforeUpdate(prevProps, prevState) {}
+
+  /* error boundaries */
+
+  // static getDerivedStateFromError(error) {}
+
+  // componentDidCatch(error, info) {}
+
+  /* legacy lifecycle methods */
+
+  // UNSAFE_componentWillMount() {}
+
+  // UNSAFE_componentWillReceiveProps(nextProps) {}
+
+  // UNSAFE_componentWillUpdate(nextProps, nextState) {}
 }
 
 export default ComponentName
+
