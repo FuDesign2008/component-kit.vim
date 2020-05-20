@@ -15,7 +15,7 @@ interface ComponentNameState {
   stateName: string
 }
 
-class ComponentName extends React.Component<
+class ComponentName extends React.PureComponent<
   ComponentNameProps,
   ComponentNameState
 > {

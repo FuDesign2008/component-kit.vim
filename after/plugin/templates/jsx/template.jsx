@@ -6,7 +6,7 @@
 import React from 'react'
 import styles from './ComponentName.MIDDLE_NAME.scss'
 
-class ComponentName extends React.Component {
+class ComponentName extends React.PureComponent {
   /***************************************************************************
    *  static properties and methods
    **************************************************************************/
