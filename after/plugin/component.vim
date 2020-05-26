@@ -365,7 +365,7 @@ function! s:ParseCreateParams(args, templateFile, withFolder)
             let item = get(a:args, counter)
             if index(s:supportCssExtensionList, item) > -1
                 let cssExtension = item
-            elseif index(s:supportScriptExtensionList) > -1
+            elseif index(s:supportScriptExtensionList, item) > -1
                 let scriptExtension = item
             endif
             let counter += 1
