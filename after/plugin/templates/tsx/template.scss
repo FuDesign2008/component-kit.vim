@@ -1,3 +1,39 @@
+@import 'src/styles/responsive';
+
 .container {
-    // TODO
+  /* 公共样式 */
+
+  @include responsive(small) {
+    /* Smartphone/iPhone 竖向 */
+  }
+
+  @include responsive(medium) {
+    /* SmartPhone/iPhone 横向 + Tablet/iPad 竖向*/
+  }
+
+  @include responsive(large) {
+    /*  Tablet/iPad 横向 */
+  }
+
+  @include responsive(xlarge) {
+    /* PC/Macbook */
+  }
+
+  /*
+     * 简化版本, 书写时尽量不与非简化版本共存
+     *  phone === small
+     *  tablet === medium + large
+     *  desktop === xlarge
+     * */
+
+  @include responsive(phone) {
+    /* Smartphone/iPhone 竖向 */
+  }
+  @include responsive(tablet) {
+    /* SmartPhone/iPhone 横向 + Tablet/iPad 竖向 + Tablet/iPad 横向 */
+  }
+  @include responsive(desktop) {
+    /* PC/Macbook */
+  }
 }
+
