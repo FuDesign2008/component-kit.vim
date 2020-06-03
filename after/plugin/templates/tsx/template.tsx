@@ -4,83 +4,36 @@
  * @date  CREATE_DATE
  */
 
-import React, {ReactElement} from 'react'
-// import styles from './ComponentName.MIDDLE_NAME.scss'
 
-interface ComponentNameProps {
+import React, { ReactElement, useEffect } from 'react'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
+import styles from './ComponentName.MIDDLE_NAME.scss'
+import { fetchData } from '../sliceName'
+import { RootState } from 'src/pages/home/store/rootReducer'
+
+export interface HookExampleProps {
   propName: string
 }
 
-interface ComponentNameState {
-  stateName: string
-}
 
-class ComponentName extends React.PureComponent<
-  ComponentNameProps,
-  ComponentNameState
-> {
-  /***************************************************************************
-   *  static properties and methods
-   **************************************************************************/
+function ComponentName(props: HookExampleProps): ReactElement {
+  // 获取数据
+  const dispatch = useDispatch()
 
-  static defaultProps = {
-    // TODO
-  }
+  useEffect(() => {
+    dispatch(fetchData({}))
+  }, [])
 
-  constructor(props: ComponentNameProps) {
-    super(props)
-
-    this.state = {
-      stateName: 'TODO',
+  // 绑定数据
+  const { data } = useSelector((state: RootState) => {
+    return {
+      data: state.sliceName.data,
     }
+  }, shallowEqual)
 
-    // bind this
-    this.nameMethod = this.nameMethod.bind(this)
-  }
+  // TODO
 
-  render(): ReactElement {
-    return <div />
-  }
-
-  /***************************************************************************
-   *  custom methods
-   **************************************************************************/
-
-  nameMethod(): void {
-    // TODO
-  }
-
-  /***************************************************************************
-   * lifecycle methods
-   **************************************************************************/
-
-  // componentDidMount() {}
-
-  // componentDidUpdate(prevProps, prevState, snapshot) {}
-
-  // componentWillUnmount() {}
-
-  /* rarely used lifecycle methods */
-
-  // static getDerivedStateFromProps(props, state) {}
-
-  // shouldComponentUpdate(nextProps, nextState) {}
-
-  // getSnapshotBeforeUpdate(prevProps, prevState) {}
-
-  /* error boundaries */
-
-  // static getDerivedStateFromError(error) {}
-
-  // componentDidCatch(error, info) {}
-
-  /* legacy lifecycle methods */
-
-  // UNSAFE_componentWillMount() {}
-
-  // UNSAFE_componentWillReceiveProps(nextProps) {}
-
-  // UNSAFE_componentWillUpdate(nextProps, nextState) {}
+  return <div className={styles.container}></div>
 }
 
 export default ComponentName
