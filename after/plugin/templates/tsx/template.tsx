@@ -11,12 +11,12 @@ import styles from './ComponentName.MIDDLE_NAME.scss'
 import { fetchData } from '../sliceName'
 import { RootState } from 'src/pages/home/store/rootReducer'
 
-export interface HookExampleProps {
+export interface ComponentNameProps {
   propName: string
 }
 
 
-function ComponentName(props: HookExampleProps): ReactElement {
+function ComponentName(props: ComponentNameProps): ReactElement {
   // 获取数据
   const dispatch = useDispatch()
 
