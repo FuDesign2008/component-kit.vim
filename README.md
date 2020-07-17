@@ -38,6 +38,7 @@ Tools for generate/refract component
 1. `CompRenameExt`: rename the extension of style/script file, and change style/script file path in template file
 1. `CompRemove`: remove all files of the component of current buffer
 1. `CompFolderize`: change current component to folder structure
+1. `CompToggleAutoLayout`: enable/disable auto layout when opening files
 
 ```
 
