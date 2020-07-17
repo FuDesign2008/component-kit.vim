@@ -1545,6 +1545,19 @@ function! s:FolderizeCurrentComponent()
     endif
 endfunction
 
+function! s:ToggleAutoLayout()
+    if s:autoLayout == 0
+        if s:autoLayoutBackup
+            let s:autoLayout = s:autoLayoutBackup
+        else
+            let s:autoLayout = 2
+        endif
+    else
+        let s:autoLayoutBackup = s:autoLayout
+        let s:autoLayout = 0
+    endif
+endfunction
+
 function! KitLayoutAuto(timer)
     let isOpen =  s:isQuickFixOpened()
     if isOpen
@@ -1563,6 +1576,10 @@ function! KitLayoutComponentEnd(timer)
 endfunction
 
 function! KitLayoutAutoWithDelay()
+    if s:autoLayout == 0
+        return
+    endif
+
     if s:kit_component_layout_doing
         return
     endif
@@ -1614,6 +1631,7 @@ command! CompLayout call s:LayoutCurrentComponent()
 command! CompLay call s:LayoutTemplateAndScript()
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()
+command! CompToggleAutoLayout call s:ToggleAutoLayout()
 
 " :CompRename[!] {newame}
 command! -nargs=1 -complete=customlist,CompRenameCompleter -bang CompRename :call s:RenameComponent("<args>", "<bang>")
