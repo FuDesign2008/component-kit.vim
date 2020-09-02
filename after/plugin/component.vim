@@ -814,7 +814,7 @@ function s:Rename3Files(templateFile, newComponentName, bang)
         \ 'tagname': 'script',
         \}
     let tagInfoList = [styleConfig, scriptConfig]
-    call s:UpdateHtml(templateFileNew, componentName, a:newComponentName, tagInfoList)
+    call s:UpdateHtml(templateFileNew, componentName . '.', a:newComponentName . '.', tagInfoList)
     return templateFileNew
 endfunction
 
