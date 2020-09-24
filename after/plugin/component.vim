@@ -422,7 +422,7 @@ function! s:CreateComponent(...)
         return
     endif
 
-    call s:LayoutComponent(templateFile, 1)
+    call s:LayoutComponent(templateFile, 1, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
@@ -468,7 +468,7 @@ function! s:CreateComponentWithFolder(...)
         return
     endif
 
-    call s:LayoutComponent(templateFile, 1)
+    call s:LayoutComponent(templateFile, 1, 1)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
@@ -515,7 +515,7 @@ endfunction
 
 "@param {string} templateFile
 "@param {0|1} includeCss
-function! s:LayoutComponent(templateFile, includeCss)
+function! s:LayoutComponent(templateFile, includeCss, includeIndex)
     if exists('*timer_start')
        if s:kit_component_layout_doing
             return
@@ -533,9 +533,14 @@ function! s:LayoutComponent(templateFile, includeCss)
         execute ':only'
         if a:includeCss && strlen(cssFile) > 0
             if withFolder
-                execute ':vnew ' . indexFile
-                execute ':new ' . cssFile
-                execute ':new ' . a:templateFile
+                if a:includeIndex
+                    execute ':vnew ' . indexFile
+                    execute ':new ' . cssFile
+                    execute ':new ' . a:templateFile
+                else
+                    execute ':vnew ' . cssFile
+                    execute ':new ' . a:templateFile
+                endif
             else
                 execute ':vnew ' . cssFile
                 execute ':new ' . a:templateFile
@@ -548,8 +553,12 @@ function! s:LayoutComponent(templateFile, includeCss)
             execute ':new ' . a:templateFile
             execute ':only'
             if withFolder
-                execute ':vnew ' . indexFile
-                execute ':new ' . cssFile
+                if a:includeIndex
+                    execute ':vnew ' . indexFile
+                    execute ':new ' . cssFile
+                else
+                    execute ':vnew ' . cssFile
+                endif
             else
                 execute ':vnew ' . cssFile
             endif
@@ -607,14 +616,14 @@ function! s:GetTemplateFileByCurrent()
 endfunction
 
 
-function! s:LayoutCurrentComponent()
+function! s:LayoutCurrentComponent(includeIndex)
     if &diff || s:isDiffMode
         return
     endif
 
     let templateFile = s:GetTemplateFileByCurrent()
     if strlen(templateFile) > 0
-        call s:LayoutComponent(templateFile, 1)
+        call s:LayoutComponent(templateFile, 1, a:includeIndex)
     else
         echomsg 'Can not find template file for current buffer'
     endif
@@ -628,7 +637,7 @@ function! s:LayoutTemplateAndScript()
     let templateFile = s:GetTemplateFileByCurrent()
 
     if strlen(templateFile) > 0
-        call s:LayoutComponent(templateFile, 0)
+        call s:LayoutComponent(templateFile, 0, 0)
     else
         echomsg 'Can not find template file for current buffer'
     endif
@@ -822,7 +831,7 @@ endfunction
 function! s:RenameComponentWithoutFolder(templateFile, name, bang)
     let templateFileNew = s:Rename3Files(a:templateFile, a:name, a:bang)
     if !empty(templateFileNew)
-        call s:LayoutComponent(templateFileNew, 1)
+        call s:LayoutComponent(templateFileNew, 1, 1)
     endif
 endfunction
 
@@ -864,7 +873,7 @@ function! s:RenameComponentWithFolder(templateFile, newComponentName, bang)
         return
     endif
     call s:UpdateIndexFile(templateFileAfterRename, componentName, a:newComponentName, a:bang)
-    call s:LayoutComponent(templateFileNew, 1)
+    call s:LayoutComponent(templateFileNew, 1, 1)
 endfunction
 
 
@@ -1079,7 +1088,7 @@ function! s:RenameExtension(extension, bang)
         endif
     endif
 
-    call s:LayoutComponent(templateFile, 1)
+    call s:LayoutComponent(templateFile, 1, 1)
 endfunction
 
 
@@ -1567,7 +1576,9 @@ function! KitLayoutAuto(timer)
     if s:autoLayout == 1
         call s:LayoutTemplateAndScript()
     elseif s:autoLayout == 2
-        call s:LayoutCurrentComponent()
+        call s:LayoutCurrentComponent(0)
+    elseif s:autoLayout == 3
+        call s:LayoutCurrentComponent(1)
     endif
 endfunction
 
@@ -1627,7 +1638,8 @@ endfunction
 
 command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! CompLayout call s:LayoutCurrentComponent()
+command! CompLayoutAll call s:LayoutCurrentComponent(1)
+command! CompLayout call s:LayoutCurrentComponent(0)
 command! CompLay call s:LayoutTemplateAndScript()
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()

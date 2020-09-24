@@ -12,6 +12,7 @@ Tools for generate/refract component
     -   If the value is `0`, no command will be called
     -   If the value is `1`, command `:CompLay` will be called
     -   If the value is `2`, command `:CompLayout` will be called
+    -   If the value is `3`, command `:CompLayoutAll` will be called
 
 ## Commands
 
@@ -29,7 +30,8 @@ Tools for generate/refract component
     - `:CompCreate path/to/Example.vue scss` will create `index.ts`, `Example.vue`, `Example.comp.ts`, `Example.comp.scss` files under `path/to/Example` folder
     - `:CompCreate path/to/Example.jsx` will create `Example.jsx`, `Example.module.css`, `index.js` files under `path/to/Example` folder
     - `:CompCreate path/to/Example.tsx scss` will create `Example.jsx`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
-1. `CompLayout`: close all windows and layout all component files.
+1. `CompLayoutAll`: close all windows and layout all component files.
+1. `CompLayout`: close all windows and layout vue, style and script files.
 1. `CompLay`: close all windows and layout vue and script files.
 1. `CompAlt`: switch index -> template (if has) -> style -> script -> index -> template (if has) ... file
 1. `CompReset`: reset the status of the plugin
@@ -42,7 +44,7 @@ Tools for generate/refract component
 
 ```
 
- // :CompLayout
+ // :CompLayoutAll
 -----------------
 | .vue  |       |
 |       |       |
@@ -51,6 +53,15 @@ Tools for generate/refract component
 |       |       |
 |-------|       |
 | index |       |
+|       |       |
+-----------------
+
+ // :CompLayout
+-----------------
+| .vue  |       |
+|       |       |
+|-------|  .js  |
+| .css  |       |
 |       |       |
 -----------------
 
