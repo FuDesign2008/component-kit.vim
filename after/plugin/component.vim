@@ -1536,7 +1536,7 @@ function! s:FolderizeComponentWithTemplateFile(templateFile)
 
         call s:BuildIndexFile(templateFileNew, scriptFileExt)
 
-        call s:LayoutComponent(templateFileNew, 1)
+        call s:LayoutComponent(templateFileNew, 1, 1)
 
         echo 'Success to folderize component of current buffer.'
     else
