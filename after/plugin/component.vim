@@ -765,10 +765,17 @@ endfunction
 
 
 " @params {string} mode  simple, complex, all
-function! s:CompLayoutCommand(mode)
-    if a:mode ==# 'all'
+function! s:CompLayoutCommand(...)
+    if a:0 == 0
+         call s:LayoutTemplateAndScript()
+        return
+    endif
+
+    let mode = a:1
+
+    if mode ==# 'all'
         call s:LayoutCurrentComponent(1)
-    elseif a:mode ==# 'complex'
+    elseif mode ==# 'complex'
         call s:LayoutCurrentComponent(0)
     else
          call s:LayoutTemplateAndScript()
@@ -1567,10 +1574,15 @@ function! s:FolderizeCurrentComponent()
 endfunction
 
 " @params {string} mode  simple, complex, all, disable
-function! s:SetAutoLayout(mode)
+function! s:SetAutoLayout(...)
+    if a:0 == 0
+        let s:autoLayout = 'simple'
+        return
+    endif
+
     let modes = ['simple', 'complex', 'all', 'disable']
-    if index(modes, a:mode) > -1
-        let s:autoLayout = a:mode
+    if index(modes, a:1) > -1
+        let s:autoLayout = a:1
     else
         let s:autoLayout = 'simple'
     endif
@@ -1582,11 +1594,11 @@ function! KitLayoutAuto(timer)
         return
     endif
 
-    if s:autoLayout == 1 || s:autoLayout ==# 'simple'
+    if s:autoLayout ==# '1' || s:autoLayout ==# 'simple'
         call s:LayoutTemplateAndScript()
-    elseif s:autoLayout == 2 || s:autoLayout ==# 'complex'
+    elseif s:autoLayout ==# '2' || s:autoLayout ==# 'complex'
         call s:LayoutCurrentComponent(0)
-    elseif s:autoLayout == 3 || s:autoLayout ==# 'all'
+    elseif s:autoLayout ==# '3' || s:autoLayout ==# 'all'
         call s:LayoutCurrentComponent(1)
     endif
 endfunction
@@ -1595,8 +1607,9 @@ function! KitLayoutComponentEnd(timer)
     call s:ResetStatus()
 endfunction
 
+
 function! KitLayoutAutoWithDelay()
-    if s:autoLayout == 0 || s:autoLayout ==# 'disable'
+    if s:autoLayout ==# '0' || s:autoLayout ==# 'disable'
         return
     endif
 
@@ -1657,10 +1670,10 @@ endfunction
 
 command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! -nargs=1 -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutCommand("<args>")
+command! -nargs=? -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutCommand(<f-args>)
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()
-command! -nargs=1 -complete=customlist,CompAutoLayoutCompleter CompAutoLayout call s:SetAutoLayout("<args>")
+command! -nargs=? -complete=customlist,CompAutoLayoutCompleter CompLayoutAuto call s:SetAutoLayout(<f-args>)
 
 " :CompRename[!] {newame}
 command! -nargs=1 -complete=customlist,CompRenameCompleter -bang CompRename :call s:RenameComponent("<args>", "<bang>")
@@ -1675,7 +1688,7 @@ command! -nargs=0 CompFolderize :call s:FolderizeCurrentComponent()
 if exists('*timer_start')
     augroup componentkit
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx  call KitLayoutAutoWithDelay()
+        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx,*.comp.ts,*.comp.js,*.comp.scss,*.comp.less,*.comp.css  call KitLayoutAutoWithDelay()
         autocmd BufReadPost index.ts,index.js  call KitLayoutAutoWithDelay()
     augroup END
 endif
