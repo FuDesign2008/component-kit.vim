@@ -763,6 +763,18 @@ function! s:RenameFolderName(folder, newFolder, bang)
     return 1
 endfunction
 
+
+" @params {string} mode  simple, complex, all
+function! s:CompLayoutCommand(mode)
+    if a:mode ==# 'all'
+        call s:LayoutCurrentComponent(1)
+    elseif a:mode ==# 'complex'
+        call s:LayoutCurrentComponent(0)
+    else
+         call s:LayoutTemplateAndScript()
+    endif
+endfunction
+
 function! s:GetComponentName(templateFile)
     let name = fnamemodify(a:templateFile, ':t:r')
     return name
@@ -1554,16 +1566,13 @@ function! s:FolderizeCurrentComponent()
     endif
 endfunction
 
-function! s:ToggleAutoLayout()
-    if s:autoLayout == 0
-        if s:autoLayoutBackup
-            let s:autoLayout = s:autoLayoutBackup
-        else
-            let s:autoLayout = 2
-        endif
+" @params {string} mode  simple, complex, all, disable
+function! s:SetAutoLayout(mode)
+    let modes = ['simple', 'complex', 'all', 'disable']
+    if index(modes, a:mode) > -1
+        let s:autoLayout = a:mode
     else
-        let s:autoLayoutBackup = s:autoLayout
-        let s:autoLayout = 0
+        let s:autoLayout = 'simple'
     endif
 endfunction
 
@@ -1573,11 +1582,11 @@ function! KitLayoutAuto(timer)
         return
     endif
 
-    if s:autoLayout == 1
+    if s:autoLayout == 1 || s:autoLayout ==# 'simple'
         call s:LayoutTemplateAndScript()
-    elseif s:autoLayout == 2
+    elseif s:autoLayout == 2 || s:autoLayout ==# 'complex'
         call s:LayoutCurrentComponent(0)
-    elseif s:autoLayout == 3
+    elseif s:autoLayout == 3 || s:autoLayout ==# 'all'
         call s:LayoutCurrentComponent(1)
     endif
 endfunction
@@ -1587,7 +1596,7 @@ function! KitLayoutComponentEnd(timer)
 endfunction
 
 function! KitLayoutAutoWithDelay()
-    if s:autoLayout == 0
+    if s:autoLayout == 0 || s:autoLayout ==# 'disable'
         return
     endif
 
@@ -1634,16 +1643,50 @@ function! CompRenameExtCompleter(argLead, cmdLine, cursorPos)
     return matchList
 endfunction
 
+function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
+    let modes = ['simple', 'complex', 'all']
+    let completer = []
+
+    let trimed = trim(a:argLead)
+    if strlen(trimed) == 0
+        return completer
+    endif
+
+    for mode in modes
+        if index(mode, trimed) > -1
+            call add(completer, mode)
+        endif
+    endfor
+
+    return completer
+endfunction
+
+function! CompAutoLayoutCompleter(argLead, cmdLine, cursorPos)
+    let modes = ['simple', 'complex', 'all', 'disable']
+    let completer = []
+
+    let trimed = trim(a:argLead)
+    if strlen(trimed) == 0
+        return completer
+    endif
+
+    for mode in modes
+        if index(mode, trimed) > -1
+            call add(completer, mode)
+        endif
+    endfor
+
+    return completer
+endfunction
+
 
 
 command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! CompLayoutAll call s:LayoutCurrentComponent(1)
-command! CompLayout call s:LayoutCurrentComponent(0)
-command! CompLay call s:LayoutTemplateAndScript()
+command! -nargs=1 -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutCommand("<args>")
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()
-command! CompToggleAutoLayout call s:ToggleAutoLayout()
+command! -nargs=1 -complete=customlist,CompAutoLayoutCompleter CompAutoLayout call s:SetAutoLayout("<args>")
 
 " :CompRename[!] {newame}
 command! -nargs=1 -complete=customlist,CompRenameCompleter -bang CompRename :call s:RenameComponent("<args>", "<bang>")
