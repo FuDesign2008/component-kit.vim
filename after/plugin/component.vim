@@ -1645,38 +1645,40 @@ endfunction
 
 function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
     let modes = ['simple', 'complex', 'all']
-    let completer = []
+    return modes
+    " let completer = []
 
-    let trimed = trim(a:argLead)
-    if strlen(trimed) == 0
-        return completer
-    endif
+    " let trimed = trim(a:argLead)
+    " if strlen(trimed) == 0
+        " return completer
+    " endif
 
-    for mode in modes
-        if index(mode, trimed) > -1
-            call add(completer, mode)
-        endif
-    endfor
+    " for mode in modes
+        " if index(mode, trimed) > -1
+            " call add(completer, mode)
+        " endif
+    " endfor
 
-    return completer
+    " return completer
 endfunction
 
 function! CompAutoLayoutCompleter(argLead, cmdLine, cursorPos)
     let modes = ['simple', 'complex', 'all', 'disable']
-    let completer = []
+    return modes
+    " let completer = []
 
-    let trimed = trim(a:argLead)
-    if strlen(trimed) == 0
-        return completer
-    endif
+    " let trimed = trim(a:argLead)
+    " if strlen(trimed) == 0
+        " return completer
+    " endif
 
-    for mode in modes
-        if index(mode, trimed) > -1
-            call add(completer, mode)
-        endif
-    endfor
+    " for mode in modes
+        " if index(mode, trimed) > -1
+            " call add(completer, mode)
+        " endif
+    " endfor
 
-    return completer
+    " return completer
 endfunction
 
 
