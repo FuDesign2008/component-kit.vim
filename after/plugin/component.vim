@@ -138,7 +138,7 @@ function! s:FormatDate()
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, templateExtension)
+function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameDashCase, scriptExtension, styleExtension, templateExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(templateFilePath)
     let middleName = get(s:middleName, a:templateExtension)
@@ -149,7 +149,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
     if strlen(templateText) > 0
         let newText = templateText
         let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
-        let newText = substitute(newText, 'component-name', a:componentNameCamel, 'g')
+        let newText = substitute(newText, 'component-name', a:componentNameDashCase, 'g')
         let newText = substitute(newText, 'MIDDLE_NAME', middleName, 'g')
         let newText = substitute(newText, 'TEMPLATE_EXTENSION', a:templateExtension, 'g')
         let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
@@ -171,13 +171,15 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     endif
 
 
+    let newText = originalText
+
     " template or script file
-    let newText = substitute(originalText, a:componentName, a:componentNameNew  , 'g')
+    let newText = substitute(newText, a:componentName, a:componentNameNew  , 'g')
     let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
 
     " template or style file
-    let className = s:Camelize(a:componentName)
-    let classNameNew = s:Camelize(a:componentNameNew)
+    let className = s:ToDashCase(a:componentName)
+    let classNameNew = s:ToDashCase(a:componentNameNew)
     let newText = substitute(newText, className, classNameNew  , 'g')
     let newText = substitute(newText, 'component-name', classNameNew  , 'g')
 
@@ -201,10 +203,10 @@ function! s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styl
 
     let templateDir = s:FindTemplateDirWithType(a:templateFile)
     let componentName = s:GetComponentName(a:templateFile)
-    let componentNameCamel = s:Camelize(componentName)
+    let componentNameDashCase = s:ToDashCase(componentName)
 
     for theFile in a:fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, a:scriptExtension, a:styleExtension, a:templateExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameDashCase, a:scriptExtension, a:styleExtension, a:templateExtension)
     endfor
     return 1
 endfunction
@@ -337,7 +339,8 @@ function! s:CompleteExtension(templateFile)
     endif
 endfunction
 
-function! s:Camelize(str)
+" AbcEfg -> abc-efg
+function! s:ToDashCase(str)
     let camelized = substitute(a:str, '\C[A-Z]',
         \ '\= "-" . tolower(submatch(0))',
         \ 'g')
@@ -570,7 +573,7 @@ function! s:LayoutComponent(templateFile, includeCss, includeIndex)
     endif
 
     if exists('*timer_start')
-        call timer_start(1000, 'KitLayoutComponentEnd')
+        call timer_start(500, 'KitLayoutComponentEnd')
     endif
 endfunction
 
@@ -842,7 +845,7 @@ function s:Rename3Files(templateFile, newComponentName, bang)
         \ 'tagname': 'script',
         \}
     let tagInfoList = [styleConfig, scriptConfig]
-    call s:UpdateHtml(templateFileNew, componentName . '.', a:newComponentName . '.', tagInfoList)
+    call s:UpdateHtml(templateFileNew, componentName . '\.', a:newComponentName . '\.', tagInfoList)
     return templateFileNew
 endfunction
 
@@ -976,7 +979,7 @@ endfunction
 " @param {String} srcPart
 " @param {String} srcPartNew
 " @param {Array} tagInfoList
-function! s:UpdateHtml(filePath, srcPart, srcPartNew, tagInfoList)
+function! s:UpdateHtml(filePath, srcPartRegExp, srcPartNewRegExp, tagInfoList)
     if filereadable(a:filePath) == 0 || len(a:tagInfoList) == 0
         echoerr 'File is not readable: ' . a:filePath
         return
@@ -1006,7 +1009,7 @@ function! s:UpdateHtml(filePath, srcPart, srcPartNew, tagInfoList)
             let srcNode = s:FindAttributeNode(attrNodeList, 'src')
             if !empty(srcNode)
                 let srcValue = get(srcNode, 'value', '')
-                let newSrcValue = substitute(srcValue, a:srcPart, a:srcPartNew, 'g')
+                let newSrcValue = substitute(srcValue,  a:srcPartRegExp, a:srcPartNewRegExp, 'g')
                 if newSrcValue !=# srcValue
                     let srcNode['value'] = newSrcValue
                     let langNode = s:FindAttributeNode(attrNodeList, 'lang')
@@ -1514,10 +1517,10 @@ function! s:BuildIndexFile(templateFile, scriptFileExt)
     if strlen(indexFilePath) > 0
         let templateDir = s:FindTemplateDirWithType(a:templateFile)
         let componentName = s:GetComponentName(a:templateFile)
-        let componentNameCamel = s:Camelize(componentName)
+        let componentNameDashCase = s:ToDashCase(componentName)
         let templateExtension = fnamemodify(a:templateFile, ':e')
 
-        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameDashCase, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
     endif
 endfunction
 
