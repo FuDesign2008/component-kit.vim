@@ -148,13 +148,13 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
 
     if strlen(templateText) > 0
         let newText = templateText
-        let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
-        let newText = substitute(newText, 'component-name', a:componentNameDashCase, 'g')
-        let newText = substitute(newText, 'MIDDLE_NAME', middleName, 'g')
-        let newText = substitute(newText, 'TEMPLATE_EXTENSION', a:templateExtension, 'g')
-        let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
-        let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension, 'g')
-        let newText = substitute(newText, 'CREATE_DATE', dateAsString, 'g')
+        let newText = substitute(newText, '\<ComponentName\>\C', a:componentName, 'g')
+        let newText = substitute(newText, 'component-name\C', a:componentNameDashCase, 'g')
+        let newText = substitute(newText, 'MIDDLE_NAME\C', middleName, 'g')
+        let newText = substitute(newText, 'TEMPLATE_EXTENSION\C', a:templateExtension, 'g')
+        let newText = substitute(newText, 'STYLE_EXTENSION\C', a:styleExtension, 'g')
+        let newText = substitute(newText, 'SCRIPT_EXTENSION\C', a:scriptExtension, 'g')
+        let newText = substitute(newText, 'CREATE_DATE\C', dateAsString, 'g')
         let content = newText
     endif
 
@@ -174,14 +174,14 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     let newText = originalText
 
     " template or script file
-    let newText = substitute(newText, a:componentName, a:componentNameNew  , 'g')
-    let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
+    let newText = substitute(newText, '\<' . a:componentName . '\>\C', a:componentNameNew  , 'g')
+    let newText = substitute(newText, '\<ComponentName\>\C', a:componentNameNew  , 'g')
 
     " template or style file
     let className = s:ToDashCase(a:componentName)
     let classNameNew = s:ToDashCase(a:componentNameNew)
-    let newText = substitute(newText, className, classNameNew  , 'g')
-    let newText = substitute(newText, 'component-name', classNameNew  , 'g')
+    let newText = substitute(newText, className . '\C', classNameNew  , 'g')
+    let newText = substitute(newText, 'component-name\C', classNameNew  , 'g')
 
     let writeOk = s:WriteFile(newText, a:filePath)
     return writeOk
@@ -803,7 +803,7 @@ endfunction
 function! s:ComposeFilePath(filePath, componentName, newComponentName)
     let path = fnamemodify(a:filePath, ':p:h')
     let fileName = fnamemodify(a:filePath, ':t')
-    let newFileName = substitute(fileName, a:componentName, a:newComponentName, 'g')
+    let newFileName = substitute(fileName,  '\<' . a:componentName . '\>\C', a:newComponentName, 'g')
     let newFilePath = path . '/' . newFileName
     return newFilePath
 endfunction
@@ -845,7 +845,7 @@ function s:Rename3Files(templateFile, newComponentName, bang)
         \ 'tagname': 'script',
         \}
     let tagInfoList = [styleConfig, scriptConfig]
-    call s:UpdateHtml(templateFileNew, componentName . '\.', a:newComponentName . '\.', tagInfoList)
+    call s:UpdateHtml(templateFileNew, '\<' . componentName . '\>\C', a:newComponentName , tagInfoList)
     return templateFileNew
 endfunction
 
@@ -871,7 +871,7 @@ function s:UpdateIndexFile(templateFile, componentName, newComponentName, bang)
         return
     endif
 
-    let newText = substitute(originalText, a:componentName, a:newComponentName, 'g')
+    let newText = substitute(originalText, '\<' . a:componentName . '\>\C', a:newComponentName, 'g')
 
     let writeOk = s:WriteFile(newText, indexFile)
     return writeOk
