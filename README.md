@@ -31,6 +31,7 @@ Tools for generate/refract component
     - `:CompCreate path/to/Example.jsx` will create `Example.jsx`, `Example.module.css`, `index.js` files under `path/to/Example` folder
     - `:CompCreate path/to/Example.tsx scss` will create `Example.jsx`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
 1. `CompLayout simple/complex/all`: close all windows and layout complonent files.
+1. `CompLayoutAuto simple/complex/all/disable`: set auto layout when opening files
 1. `CompAlt`: switch index -> template (if has) -> style -> script -> index -> template (if has) ... file
 1. `CompReset`: reset the status of the plugin
 1. `CompRename`: rename all files of a vue component, and change style/script file path in template file
@@ -38,7 +39,6 @@ Tools for generate/refract component
 1. `CompRenameExt`: rename the extension of style/script file, and change style/script file path in template file
 1. `CompRemove`: remove all files of the component of current buffer
 1. `CompFolderize`: change current component to folder structure
-1. `CompLayoutAuto simple/complex/all/disable`: set auto layout when opening files
 
 ```
 

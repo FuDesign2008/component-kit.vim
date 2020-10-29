@@ -768,7 +768,7 @@ endfunction
 
 
 " @params {string} mode  simple, complex, all
-function! s:CompLayoutCommand(...)
+function! s:CompLayoutWithMode(...)
     if a:0 == 0
          call s:LayoutTemplateAndScript()
         return
@@ -1580,15 +1580,16 @@ endfunction
 function! s:SetAutoLayout(...)
     if a:0 == 0
         let s:autoLayout = 'simple'
-        return
+    else
+        let modes = ['simple', 'complex', 'all', 'disable']
+        if index(modes, a:1) > -1
+            let s:autoLayout = a:1
+        else
+            let s:autoLayout = 'simple'
+        endif
     endif
 
-    let modes = ['simple', 'complex', 'all', 'disable']
-    if index(modes, a:1) > -1
-        let s:autoLayout = a:1
-    else
-        let s:autoLayout = 'simple'
-    endif
+    call s:CompLayoutWithMode(s:autoLayout)
 endfunction
 
 function! KitLayoutAuto(timer)
@@ -1673,7 +1674,7 @@ endfunction
 
 command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! -nargs=? -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutCommand(<f-args>)
+command! -nargs=? -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutWithMode(<f-args>)
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()
 command! -nargs=? -complete=customlist,CompAutoLayoutCompleter CompLayoutAuto call s:SetAutoLayout(<f-args>)
