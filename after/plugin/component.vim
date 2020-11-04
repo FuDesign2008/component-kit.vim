@@ -138,7 +138,7 @@ function! s:FormatDate()
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameCamel, scriptExtension, styleExtension, templateExtension)
+function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNameDashCase, scriptExtension, styleExtension, templateExtension)
     let templateFilePath = s:findTemplateFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(templateFilePath)
     let middleName = get(s:middleName, a:templateExtension)
@@ -148,13 +148,13 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, componentNa
 
     if strlen(templateText) > 0
         let newText = templateText
-        let newText = substitute(newText, 'ComponentName', a:componentName, 'g')
-        let newText = substitute(newText, 'component-name', a:componentNameCamel, 'g')
-        let newText = substitute(newText, 'MIDDLE_NAME', middleName, 'g')
-        let newText = substitute(newText, 'TEMPLATE_EXTENSION', a:templateExtension, 'g')
-        let newText = substitute(newText, 'STYLE_EXTENSION', a:styleExtension, 'g')
-        let newText = substitute(newText, 'SCRIPT_EXTENSION', a:scriptExtension, 'g')
-        let newText = substitute(newText, 'CREATE_DATE', dateAsString, 'g')
+        let newText = substitute(newText, '\<ComponentName\>\C', a:componentName, 'g')
+        let newText = substitute(newText, 'component-name\C', a:componentNameDashCase, 'g')
+        let newText = substitute(newText, 'MIDDLE_NAME\C', middleName, 'g')
+        let newText = substitute(newText, 'TEMPLATE_EXTENSION\C', a:templateExtension, 'g')
+        let newText = substitute(newText, 'STYLE_EXTENSION\C', a:styleExtension, 'g')
+        let newText = substitute(newText, 'SCRIPT_EXTENSION\C', a:scriptExtension, 'g')
+        let newText = substitute(newText, 'CREATE_DATE\C', dateAsString, 'g')
         let content = newText
     endif
 
@@ -171,15 +171,17 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     endif
 
 
+    let newText = originalText
+
     " template or script file
-    let newText = substitute(originalText, a:componentName, a:componentNameNew  , 'g')
-    let newText = substitute(newText, 'ComponentName', a:componentNameNew  , 'g')
+    let newText = substitute(newText, '\<' . a:componentName . '\>\C', a:componentNameNew  , 'g')
+    let newText = substitute(newText, '\<ComponentName\>\C', a:componentNameNew  , 'g')
 
     " template or style file
-    let className = s:Camelize(a:componentName)
-    let classNameNew = s:Camelize(a:componentNameNew)
-    let newText = substitute(newText, className, classNameNew  , 'g')
-    let newText = substitute(newText, 'component-name', classNameNew  , 'g')
+    let className = s:ToDashCase(a:componentName)
+    let classNameNew = s:ToDashCase(a:componentNameNew)
+    let newText = substitute(newText, className . '\C', classNameNew  , 'g')
+    let newText = substitute(newText, 'component-name\C', classNameNew  , 'g')
 
     let writeOk = s:WriteFile(newText, a:filePath)
     return writeOk
@@ -201,10 +203,10 @@ function! s:CreateAndWriteFileList(fileList, templateFile, scriptExtension, styl
 
     let templateDir = s:FindTemplateDirWithType(a:templateFile)
     let componentName = s:GetComponentName(a:templateFile)
-    let componentNameCamel = s:Camelize(componentName)
+    let componentNameDashCase = s:ToDashCase(componentName)
 
     for theFile in a:fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameCamel, a:scriptExtension, a:styleExtension, a:templateExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, componentNameDashCase, a:scriptExtension, a:styleExtension, a:templateExtension)
     endfor
     return 1
 endfunction
@@ -337,7 +339,8 @@ function! s:CompleteExtension(templateFile)
     endif
 endfunction
 
-function! s:Camelize(str)
+" AbcEfg -> abc-efg
+function! s:ToDashCase(str)
     let camelized = substitute(a:str, '\C[A-Z]',
         \ '\= "-" . tolower(submatch(0))',
         \ 'g')
@@ -570,7 +573,7 @@ function! s:LayoutComponent(templateFile, includeCss, includeIndex)
     endif
 
     if exists('*timer_start')
-        call timer_start(1000, 'KitLayoutComponentEnd')
+        call timer_start(500, 'KitLayoutComponentEnd')
     endif
 endfunction
 
@@ -765,10 +768,17 @@ endfunction
 
 
 " @params {string} mode  simple, complex, all
-function! s:CompLayoutCommand(mode)
-    if a:mode ==# 'all'
+function! s:CompLayoutWithMode(...)
+    if a:0 == 0
+         call s:LayoutTemplateAndScript()
+        return
+    endif
+
+    let mode = a:1
+
+    if mode ==# 'all'
         call s:LayoutCurrentComponent(1)
-    elseif a:mode ==# 'complex'
+    elseif mode ==# 'complex'
         call s:LayoutCurrentComponent(0)
     else
          call s:LayoutTemplateAndScript()
@@ -793,7 +803,7 @@ endfunction
 function! s:ComposeFilePath(filePath, componentName, newComponentName)
     let path = fnamemodify(a:filePath, ':p:h')
     let fileName = fnamemodify(a:filePath, ':t')
-    let newFileName = substitute(fileName, a:componentName, a:newComponentName, 'g')
+    let newFileName = substitute(fileName,  '\<' . a:componentName . '\>\C', a:newComponentName, 'g')
     let newFilePath = path . '/' . newFileName
     return newFilePath
 endfunction
@@ -835,7 +845,7 @@ function s:Rename3Files(templateFile, newComponentName, bang)
         \ 'tagname': 'script',
         \}
     let tagInfoList = [styleConfig, scriptConfig]
-    call s:UpdateHtml(templateFileNew, componentName . '.', a:newComponentName . '.', tagInfoList)
+    call s:UpdateHtml(templateFileNew, '\<' . componentName . '\>\C', a:newComponentName , tagInfoList)
     return templateFileNew
 endfunction
 
@@ -861,7 +871,7 @@ function s:UpdateIndexFile(templateFile, componentName, newComponentName, bang)
         return
     endif
 
-    let newText = substitute(originalText, a:componentName, a:newComponentName, 'g')
+    let newText = substitute(originalText, '\<' . a:componentName . '\>\C', a:newComponentName, 'g')
 
     let writeOk = s:WriteFile(newText, indexFile)
     return writeOk
@@ -969,7 +979,7 @@ endfunction
 " @param {String} srcPart
 " @param {String} srcPartNew
 " @param {Array} tagInfoList
-function! s:UpdateHtml(filePath, srcPart, srcPartNew, tagInfoList)
+function! s:UpdateHtml(filePath, srcPartRegExp, srcPartNewRegExp, tagInfoList)
     if filereadable(a:filePath) == 0 || len(a:tagInfoList) == 0
         echoerr 'File is not readable: ' . a:filePath
         return
@@ -999,7 +1009,7 @@ function! s:UpdateHtml(filePath, srcPart, srcPartNew, tagInfoList)
             let srcNode = s:FindAttributeNode(attrNodeList, 'src')
             if !empty(srcNode)
                 let srcValue = get(srcNode, 'value', '')
-                let newSrcValue = substitute(srcValue, a:srcPart, a:srcPartNew, 'g')
+                let newSrcValue = substitute(srcValue,  a:srcPartRegExp, a:srcPartNewRegExp, 'g')
                 if newSrcValue !=# srcValue
                     let srcNode['value'] = newSrcValue
                     let langNode = s:FindAttributeNode(attrNodeList, 'lang')
@@ -1507,10 +1517,10 @@ function! s:BuildIndexFile(templateFile, scriptFileExt)
     if strlen(indexFilePath) > 0
         let templateDir = s:FindTemplateDirWithType(a:templateFile)
         let componentName = s:GetComponentName(a:templateFile)
-        let componentNameCamel = s:Camelize(componentName)
+        let componentNameDashCase = s:ToDashCase(componentName)
         let templateExtension = fnamemodify(a:templateFile, ':e')
 
-        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameCamel, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, componentNameDashCase, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
     endif
 endfunction
 
@@ -1567,13 +1577,19 @@ function! s:FolderizeCurrentComponent()
 endfunction
 
 " @params {string} mode  simple, complex, all, disable
-function! s:SetAutoLayout(mode)
-    let modes = ['simple', 'complex', 'all', 'disable']
-    if index(modes, a:mode) > -1
-        let s:autoLayout = a:mode
-    else
+function! s:SetAutoLayout(...)
+    if a:0 == 0
         let s:autoLayout = 'simple'
+    else
+        let modes = ['simple', 'complex', 'all', 'disable']
+        if index(modes, a:1) > -1
+            let s:autoLayout = a:1
+        else
+            let s:autoLayout = 'simple'
+        endif
     endif
+
+    call s:CompLayoutWithMode(s:autoLayout)
 endfunction
 
 function! KitLayoutAuto(timer)
@@ -1582,11 +1598,11 @@ function! KitLayoutAuto(timer)
         return
     endif
 
-    if s:autoLayout == 1 || s:autoLayout ==# 'simple'
+    if s:autoLayout ==# '1' || s:autoLayout ==# 'simple'
         call s:LayoutTemplateAndScript()
-    elseif s:autoLayout == 2 || s:autoLayout ==# 'complex'
+    elseif s:autoLayout ==# '2' || s:autoLayout ==# 'complex'
         call s:LayoutCurrentComponent(0)
-    elseif s:autoLayout == 3 || s:autoLayout ==# 'all'
+    elseif s:autoLayout ==# '3' || s:autoLayout ==# 'all'
         call s:LayoutCurrentComponent(1)
     endif
 endfunction
@@ -1595,8 +1611,9 @@ function! KitLayoutComponentEnd(timer)
     call s:ResetStatus()
 endfunction
 
+
 function! KitLayoutAutoWithDelay()
-    if s:autoLayout == 0 || s:autoLayout ==# 'disable'
+    if s:autoLayout ==# '0' || s:autoLayout ==# 'disable'
         return
     endif
 
@@ -1691,10 +1708,10 @@ endfunction
 
 command! -nargs=+ -complete=file CompCreate call s:CreateComponent(<f-args>)
 command! -nargs=+ -complete=file CompCreateFolder call s:CreateComponentWithFolder(<f-args>)
-command! -nargs=1 -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutCommand("<args>")
+command! -nargs=? -complete=customlist,CompLayoutCompleter CompLayout call s:CompLayoutWithMode(<f-args>)
 command! CompAlt call s:SwitchCurrentComponent()
 command! CompReset call s:ResetStatus()
-command! -nargs=1 -complete=customlist,CompAutoLayoutCompleter CompAutoLayout call s:SetAutoLayout("<args>")
+command! -nargs=? -complete=customlist,CompAutoLayoutCompleter CompLayoutAuto call s:SetAutoLayout(<f-args>)
 
 " :CompRename[!] {newame}
 command! -nargs=1 -complete=customlist,CompRenameCompleter -bang CompRename :call s:RenameComponent("<args>", "<bang>")
@@ -1709,7 +1726,7 @@ command! -nargs=0 CompFolderize :call s:FolderizeCurrentComponent()
 if exists('*timer_start')
     augroup componentkit
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx  call KitLayoutAutoWithDelay()
+        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx,*.comp.ts,*.comp.js,*.comp.scss,*.comp.less,*.comp.css  call KitLayoutAutoWithDelay()
         autocmd BufReadPost index.ts,index.js  call KitLayoutAutoWithDelay()
     augroup END
 endif
