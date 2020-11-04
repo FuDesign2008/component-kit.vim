@@ -1612,9 +1612,9 @@ function! CompRenameCompleter(argLead, cmdLine, cursorPos)
     if strlen(templateFile) > 0
         let componentName = s:GetComponentName(templateFile)
         if strlen(componentName) > 0
-            let trimed = trim(a:argLead)
-            if strlen(trimed) > 0
-                if stridx(componentName, trimed) > -1
+            let hint = trim(a:argLead)
+            if strlen(hint) > 0
+                if stridx(componentName, hint) > -1
                     return [componentName]
                 endif
             else
@@ -1640,17 +1640,51 @@ function! CompRenameExtCompleter(argLead, cmdLine, cursorPos)
         endif
     endfor
 
+    call sort(matchList)
+
     return matchList
 endfunction
 
 function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
     let modes = ['simple', 'complex', 'all']
-    return modes
+    let hint = trim(a:argLead)
+    let length = len(hint)
+
+    if length == 0
+        call sort(modes)
+        return modes
+    endif
+
+    let matchList = []
+    for item in modes
+        if stridx(item, hint) > -1
+            call add(matchList)
+        endif
+    endfor
+
+    call sort(matchList)
+    return matchList
 endfunction
 
 function! CompAutoLayoutCompleter(argLead, cmdLine, cursorPos)
     let modes = ['simple', 'complex', 'all', 'disable']
-    return modes
+    let hint = trim(a:argLead)
+    let length = len(hint)
+
+    if length == 0
+        call sort(modes)
+        return modes
+    endif
+
+    let matchList = []
+    for item in modes
+        if stridx(item, hint) > -1
+            call add(matchList)
+        endif
+    endfor
+
+    call sort(matchList)
+    return matchList
 endfunction
 
 
