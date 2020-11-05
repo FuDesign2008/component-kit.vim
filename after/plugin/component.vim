@@ -1675,7 +1675,7 @@ function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
     let matchList = []
     for item in modes
         if stridx(item, hint) > -1
-            call add(matchList)
+            call add(matchList, item)
         endif
     endfor
 
@@ -1696,7 +1696,7 @@ function! CompAutoLayoutCompleter(argLead, cmdLine, cursorPos)
     let matchList = []
     for item in modes
         if stridx(item, hint) > -1
-            call add(matchList)
+            call add(matchList, item)
         endif
     endfor
 
