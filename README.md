@@ -9,10 +9,11 @@ Tools for generate/refract component
 1.  `g:kit_component_css_extension`: The extension for creating & finding style file, default is `'css'`
 1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.kit-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `TEMPLATE_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
 1.  `g:kit_component_auto_layout`: Call `:CompLayout` automatically when opening `*.vue`/`*.wpy` or `index.js/index.ts` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
-    -   If the value is `0`/`disable`, no command will be called
-    -   If the value is `1`/`simple`, command `:CompLayout simple` will be called
-    -   If the value is `2`/`complex`, command `:CompLayout complex` will be called
-    -   If the value is `3`/`all`, command `:CompLayout all` will be called
+    -   If the value is `disable`, no command will be called
+    -   If the value is `simple`, command `:CompLayout simple` will be called
+    -   If the value is `complex`, command `:CompLayout complex` will be called
+    -   If the value is `all`, command `:CompLayout all` will be called
+    -   If the value is `folder`, command `:CompLayout folder` will be called
 
 ## Commands
 
@@ -30,8 +31,8 @@ Tools for generate/refract component
     - `:CompCreate path/to/Example.vue scss` will create `index.ts`, `Example.vue`, `Example.comp.ts`, `Example.comp.scss` files under `path/to/Example` folder
     - `:CompCreate path/to/Example.jsx` will create `Example.jsx`, `Example.module.css`, `index.js` files under `path/to/Example` folder
     - `:CompCreate path/to/Example.tsx scss` will create `Example.jsx`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
-1. `CompLayout simple/complex/all`: close all windows and layout complonent files.
-1. `CompLayoutAuto simple/complex/all/disable`: set auto layout when opening files
+1. `CompLayout simple/complex/all/folder`: close all windows and layout complonent files.
+1. `CompLayoutAuto simple/complex/all/folder/disable`: set auto layout when opening files
 1. `CompAlt`: switch index -> template (if has) -> style -> script -> index -> template (if has) ... file
 1. `CompReset`: reset the status of the plugin
 1. `CompRename`: rename all files of a vue component, and change style/script file path in template file

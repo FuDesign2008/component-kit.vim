@@ -25,7 +25,7 @@ let s:middleName = { 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'modu
 let s:scriptExtension = 'js'
 let s:styleExtension = 'css'
 
-let s:autoLayout = 0
+let s:autoLayout = 'simple'
 
 let s:kit_component_layout_doing = 0
 
@@ -60,7 +60,7 @@ if exists('g:kit_component_css_extension') && strlen(g:kit_component_css_extensi
     let s:styleExtension = g:kit_component_css_extension
 endif
 
-if exists('g:kit_component_auto_layout')
+if exists('g:kit_component_auto_layout') && index(['simple', 'complex', 'all', 'disable', 'folder'], g:kit_component_auto_layout) > -1
     let s:autoLayout = g:kit_component_auto_layout
 endif
 
@@ -632,6 +632,12 @@ function! s:LayoutCurrentComponent(includeIndex)
     endif
 endfunction
 
+function! s:EditCurrentFolder()
+    let file = expand('%')
+    let folder = fnamemodify(file, ':h')
+    execute ':edit ' . folder
+endfunction
+
 function! s:LayoutTemplateAndScript()
     if &diff || s:isDiffMode
         return
@@ -767,7 +773,20 @@ function! s:RenameFolderName(folder, newFolder, bang)
 endfunction
 
 
-" @params {string} mode  simple, complex, all
+function! s:DoCompLayoutWithMode(mode)
+    if a:mode ==# 'all'
+        call s:LayoutCurrentComponent(1)
+    elseif a:mode ==# 'complex'
+        call s:LayoutCurrentComponent(0)
+    elseif a:mode ==# 'folder'
+        call s:EditCurrentFolder()
+    elseif a:mode ==# 'simple'
+         call s:LayoutTemplateAndScript()
+    endif
+endfunction
+
+
+" @params {string} mode  simple, complex, all, folder
 function! s:CompLayoutWithMode(...)
     if a:0 == 0
          call s:LayoutTemplateAndScript()
@@ -775,14 +794,7 @@ function! s:CompLayoutWithMode(...)
     endif
 
     let mode = a:1
-
-    if mode ==# 'all'
-        call s:LayoutCurrentComponent(1)
-    elseif mode ==# 'complex'
-        call s:LayoutCurrentComponent(0)
-    else
-         call s:LayoutTemplateAndScript()
-    endif
+    call s:DoCompLayoutWithMode(mode)
 endfunction
 
 function! s:GetComponentName(templateFile)
@@ -1576,12 +1588,12 @@ function! s:FolderizeCurrentComponent()
     endif
 endfunction
 
-" @params {string} mode  simple, complex, all, disable
+" @params {string} mode  simple, complex, all, disable, folder
 function! s:SetAutoLayout(...)
     if a:0 == 0
         let s:autoLayout = 'simple'
     else
-        let modes = ['simple', 'complex', 'all', 'disable']
+        let modes = ['simple', 'complex', 'all', 'disable', 'folder']
         if index(modes, a:1) > -1
             let s:autoLayout = a:1
         else
@@ -1598,13 +1610,7 @@ function! KitLayoutAuto(timer)
         return
     endif
 
-    if s:autoLayout ==# '1' || s:autoLayout ==# 'simple'
-        call s:LayoutTemplateAndScript()
-    elseif s:autoLayout ==# '2' || s:autoLayout ==# 'complex'
-        call s:LayoutCurrentComponent(0)
-    elseif s:autoLayout ==# '3' || s:autoLayout ==# 'all'
-        call s:LayoutCurrentComponent(1)
-    endif
+    call s:DoCompLayoutWithMode(s:autoLayout)
 endfunction
 
 function! KitLayoutComponentEnd(timer)
@@ -1613,7 +1619,7 @@ endfunction
 
 
 function! KitLayoutAutoWithDelay()
-    if s:autoLayout ==# '0' || s:autoLayout ==# 'disable'
+    if s:autoLayout ==# 'disable'
         return
     endif
 
@@ -1663,7 +1669,7 @@ function! CompRenameExtCompleter(argLead, cmdLine, cursorPos)
 endfunction
 
 function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
-    let modes = ['simple', 'complex', 'all']
+    let modes = ['simple', 'complex', 'all', 'folder']
     let hint = trim(a:argLead)
     let length = len(hint)
 
@@ -1684,7 +1690,7 @@ function! CompLayoutCompleter(argLead, cmdLine, cursorPos)
 endfunction
 
 function! CompAutoLayoutCompleter(argLead, cmdLine, cursorPos)
-    let modes = ['simple', 'complex', 'all', 'disable']
+    let modes = ['simple', 'complex', 'all', 'disable', 'folder']
     let hint = trim(a:argLead)
     let length = len(hint)
 
