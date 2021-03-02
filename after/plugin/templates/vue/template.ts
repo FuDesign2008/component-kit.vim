@@ -9,7 +9,7 @@ import Component /*, { mixins } */ from 'vue-class-component'
 // import { Action, Getter, namespace, State } from 'vuex-class'
 // const storeModule = namespace('store-module-name')
 
-/* tslint:disable:member-ordering */
+/* eslint-disable @typescript-eslint/member-ordering */
 
 @Component({
   // name: '',
