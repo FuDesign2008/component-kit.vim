@@ -1,6 +1,6 @@
 # component-kit.vim
 
-Tools for generate/refract component
+Toolkit for generate/refract/layout component
 
 ## Config
 
@@ -84,6 +84,10 @@ This toolkit supports component like:
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
 1. [React](https://reactjs.org/docs/react-component.html)
+
+## Screenshot
+
+![layout](./docs/layout.gif)
 
 ## TODO
 
