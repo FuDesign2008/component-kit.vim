@@ -543,7 +543,7 @@ function! s:LayoutComponent(templateFile, includeCss, includeIndex)
 
     if fileCount == 1
         echomsg 'Layout cancel: only 1 file'
-        call KitLayoutComponentEnd()
+        call s:ResetStatus()
         return
     endif
 
