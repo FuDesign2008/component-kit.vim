@@ -531,6 +531,21 @@ function! s:LayoutComponent(templateFile, includeCss, includeIndex)
     let withFolder = s:DetectFolder(a:templateFile)
     let indexFile = s:FindIndexFile(a:templateFile)
 
+    " Now the template file
+    let fileCount = 1
+    if strlen(scriptFile)
+        let fileCount +=1
+    endif
+
+    if strlen(cssFile)
+        let fileCount +=1
+    endif
+
+    if fileCount == 1
+        echomsg 'Layout cancel: only 1 file'
+        return
+    endif
+
     if strlen(scriptFile) > 0
         execute ':new ' . scriptFile
         execute ':only'
