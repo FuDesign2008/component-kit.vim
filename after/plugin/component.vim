@@ -146,19 +146,19 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, scriptExten
     let content = ''
     let dateAsString = s:FormatDate()
 
-    let componentNameDashCase = s:ToKebabCase(a:componentName)
-    let componentNameCamelCase = s:ToCamelCase(a:componentName)
+    let kebabCase = s:ToKebabCase(a:componentName)
+    let camelCase = s:ToCamelCase(a:componentName)
 
     if strlen(templateText) > 0
         let newText = templateText
         let newText = substitute(newText, '\<ComponentName\>\C', a:componentName, 'g')
-        let newText = substitute(newText, 'component-name\C', componentNameDashCase, 'g')
-        let newText = substitute(newText, 'componentName\C', componentNameCamelCase, 'g')
-        let newText = substitute(newText, 'MIDDLE_NAME\C', middleName, 'g')
-        let newText = substitute(newText, 'TEMPLATE_EXTENSION\C', a:templateExtension, 'g')
-        let newText = substitute(newText, 'STYLE_EXTENSION\C', a:styleExtension, 'g')
-        let newText = substitute(newText, 'SCRIPT_EXTENSION\C', a:scriptExtension, 'g')
-        let newText = substitute(newText, 'CREATE_DATE\C', dateAsString, 'g')
+        let newText = substitute(newText, '\<component-name\>\C', kebabCase, 'g')
+        let newText = substitute(newText, '\<componentName\>\C', camelCase, 'g')
+        let newText = substitute(newText, '\<MIDDLE_NAME\>\C', middleName, 'g')
+        let newText = substitute(newText, '\<TEMPLATE_EXTENSION\>\C', a:templateExtension, 'g')
+        let newText = substitute(newText, '\<STYLE_EXTENSION\>\C', a:styleExtension, 'g')
+        let newText = substitute(newText, '\<SCRIPT_EXTENSION\>\C', a:scriptExtension, 'g')
+        let newText = substitute(newText, '\<CREATE_DATE\>\C', dateAsString, 'g')
         let content = newText
     endif
 
@@ -182,16 +182,16 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     let newText = substitute(newText, '\<ComponentName\>\C', a:componentNameNew  , 'g')
 
     " update kebab case (template or style file)
-    let dashedCase = s:ToKebabCase(a:componentName)
-    let dashedCaseNew = s:ToKebabCase(a:componentNameNew)
-    let newText = substitute(newText, dashedCase . '\C', dashedCaseNew, 'g')
-    let newText = substitute(newText, 'component-name\C', dashedCaseNew, 'g')
+    let kebabCase = s:ToKebabCase(a:componentName)
+    let kebabCaseNew = s:ToKebabCase(a:componentNameNew)
+    let newText = substitute(newText, '\<' . kebabCase . '\>\C', kebabCaseNew, 'g')
+    let newText = substitute(newText, '\<component-name\>\C', kebabCaseNew, 'g')
 
-    "update camel case 
+    "update camel case
     let camelCase = s:ToCamelCase(a:componentName)
     let camelCaseNew = s:ToCamelCase(a:componentNameNew)
-    let newText = substitute(newText, camelCase . '\C', camelCaseNew, 'g')
-    let newText = substitute(newText, 'componentName\C', camelCaseNew, 'g')
+    let newText = substitute(newText, '\<'. camelCase . '\>\C', camelCaseNew, 'g')
+    let newText = substitute(newText, '\<componentName\>\C', camelCaseNew, 'g')
 
     let writeOk = s:WriteFile(newText, a:filePath)
     return writeOk
@@ -1555,7 +1555,6 @@ function! s:BuildIndexFile(templateFile, scriptFileExt)
     if strlen(indexFilePath) > 0
         let templateDir = s:FindTemplateDirWithType(a:templateFile)
         let componentName = s:GetComponentName(a:templateFile)
-        let componentNameDashCase = s:ToKebabCase(componentName)
         let templateExtension = fnamemodify(a:templateFile, ':e')
 
         call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
