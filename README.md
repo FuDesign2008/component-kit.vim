@@ -52,7 +52,7 @@ A component is composed by:
 1. utils file... (optional)
 
 - `folder` = the component folder
-- `all` = `1 + 2 + 3 + 4`
+- `all` = `1 + 2 + 3 + 4` (default value)
 - `complex` = `1 + 2 +3`
 - `simple` = `1 + 2`
 

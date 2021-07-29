@@ -25,7 +25,7 @@ let s:middleName = { 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'modu
 let s:scriptExtension = 'js'
 let s:styleExtension = 'css'
 
-let s:autoLayout = 'simple'
+let s:autoLayout = 'all'
 
 let s:kit_component_layout_doing = 0
 
