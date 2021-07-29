@@ -350,7 +350,7 @@ endfunction
 
 " AbcEfg -> abc-efg
 function! s:ToKebabCase(str)
-    return tolower(substitute(a:str, '\C[a-z][A-Z]', '\1-\2', 'g'))
+    return tolower(substitute(a:str, '\C\([a-z]\)\([A-Z]\)', '\1-\2', 'g'))
 endfunction
 
 " AbcEfg -> abcEfg
