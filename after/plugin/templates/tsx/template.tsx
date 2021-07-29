@@ -11,11 +11,11 @@ import {
   // ref,
   // inject,
   // PropType,
-} from "@vue/composition-api";
-import styles from "./ComponentName.module.scss";
+} from '@vue/composition-api'
+import styles from './ComponentName.module.scss'
 
 export default defineComponent({
-  name: "ComponentName",
+  name: 'ComponentName',
 
   props: {
     // TODO
@@ -33,7 +33,7 @@ export default defineComponent({
     return (
       <div
         class={{
-          "component-name": true,
+          'component-name': true,
           [styles.componentName]: true,
         }}
       ></div>
