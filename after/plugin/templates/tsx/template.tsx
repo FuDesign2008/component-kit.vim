@@ -4,37 +4,39 @@
  * @date  CREATE_DATE
  */
 
+import {
+  defineComponent,
+  // computed,
+  // toRefs,
+  // ref,
+  // inject,
+  // PropType,
+} from "@vue/composition-api";
+import styles from "./ComponentName.module.scss";
 
-import React, { ReactElement, useEffect } from 'react'
-import { useSelector, useDispatch, shallowEqual } from 'react-redux'
-import styles from './ComponentName.MIDDLE_NAME.scss'
-import { fetchData } from '../sliceName'
-import { RootState } from 'src/pages/home/store/rootReducer'
+export default defineComponent({
+  name: "ComponentName",
 
-export interface ComponentNameProps {
-  propName: string
-}
+  props: {
+    // TODO
+  },
 
-
-function ComponentName(props: ComponentNameProps): ReactElement {
-  // 获取数据
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(fetchData({}))
-  }, [])
-
-  // 绑定数据
-  const { data } = useSelector((state: RootState) => {
+  setup(/*props*/) {
+    // TODO
     return {
-      data: state.sliceName.data,
+      // TODO
     }
-  }, shallowEqual)
+  },
 
-  // TODO
-
-  return <div className={styles.container}></div>
-}
-
-export default ComponentName
-
+  render() {
+    // TODO
+    return (
+      <div
+        class={{
+          "component-name": true,
+          [styles.componentName]: true,
+        }}
+      ></div>
+    )
+  },
+})
