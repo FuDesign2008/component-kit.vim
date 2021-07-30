@@ -21,7 +21,7 @@ export default defineComponent({
     // TODO
   },
 
-  setup(/*props*/) {
+  setup(/*props, context*/) {
     // TODO
     return {
       // TODO
