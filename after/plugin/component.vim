@@ -724,6 +724,8 @@ function! s:SwitchFile(mainFile, currentType)
     endif
 endfunction
 
+let s:kit_component_switch_file = 0
+
 function! s:SwitchCurrentComponent()
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
@@ -740,15 +742,21 @@ function! s:SwitchCurrentComponent()
         let currentType = 'script'
     endif
 
+
+    let s:kit_component_switch_file = 1
+
     if strlen(mainFile) > 0
         call s:SwitchFile(mainFile, currentType)
     else
         echomsg 'Can not find main file for current buffer'
     endif
+
+    let s:kit_component_switch_file = 0
 endfunction
 
 function! s:ResetStatus()
     let s:kit_component_layout_doing = 0
+    let s:kit_component_switch_file = 0
 endfunction
 
 
@@ -1625,13 +1633,13 @@ endfunction
 " @params {string} mode  simple, complex, all, disable, folder
 function! s:SetAutoLayout(...)
     if a:0 == 0
-        let s:autoLayout = 'simple'
+        let s:autoLayout = 'all'
     else
         let modes = ['simple', 'complex', 'all', 'disable', 'folder']
         if index(modes, a:1) > -1
             let s:autoLayout = a:1
         else
-            let s:autoLayout = 'simple'
+            let s:autoLayout = 'all'
         endif
     endif
 
@@ -1657,9 +1665,10 @@ function! KitLayoutAutoWithDelay()
         return
     endif
 
-    if s:kit_component_layout_doing
+    if s:kit_component_layout_doing || s:kit_component_switch_file
         return
     endif
+
     call timer_start(10, 'KitLayoutAuto')
 endfunction
 
@@ -1766,8 +1775,7 @@ command! -nargs=0 CompFolderize :call s:FolderizeCurrentComponent()
 if exists('*timer_start')
     augroup componentkit
         autocmd!
-        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx,*.comp.ts,*.comp.js,*.comp.scss,*.comp.less,*.comp.css  call KitLayoutAutoWithDelay()
-        autocmd BufReadPost index.ts,index.js  call KitLayoutAutoWithDelay()
+        autocmd BufReadPost *.vue,*.wpy,*.jsx,*.tsx,*.ts,*.js,*.scss,*.less,*.css  call KitLayoutAutoWithDelay()
     augroup END
 endif
 
