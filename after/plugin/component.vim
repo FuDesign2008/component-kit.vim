@@ -359,6 +359,14 @@ function! s:ToCamelCase(str)
 endfunction
 
 " function! s:ParseCreateParams(mainFile, scriptOrStyleExtension?, styleOrScriptExtension?)
+" @return {ComponentInfo} 
+" @interface ComponentInfo {
+"   mainFile: string
+"   mainExtension: string
+"   styleExtension?: string
+"   scriptExtension?: string
+"   isFolder:0 | 1
+" }
 function! s:ParseCreateParams(args, mainFile, withFolder)
     let result = {}
 
@@ -399,6 +407,7 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
     let result['mainExtension'] = mainExtension
     let result['styleExtension'] = cssExtension
     let result['scriptExtension'] = scriptExtension
+    let result['isFolder'] = a:withFolder
     return result
 endfunction
 
