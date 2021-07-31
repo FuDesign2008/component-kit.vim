@@ -2,6 +2,8 @@
 
 > Toolkit for generate/refract/layout component
 
+⚠️ This plugin need `timers` feature (`:has('timers')`) of vim, executing `:help timers` for more.
+
 ## Screenshot
 
 ![layout](./docs/layout.gif)
@@ -16,9 +18,7 @@ A vue/react component is composed by:
 1. index file (optional): `index.js`/`index.ts`
 1. utils files... (optional)
 
-
 A component may be organized in a folder, e.g.
-
 
 ```bash
 components
@@ -36,7 +36,6 @@ components
 
 Or be organized without a folder, e.g.
 
-
 ```bash
 components
     ├── ComponentNameA.comp.scss       // style file
@@ -46,8 +45,6 @@ components
     └── ComponentNameB.tsx             // main file
 
 ```
-
-
 
 ## Commands
 
@@ -67,7 +64,7 @@ components
    - `:CompCreate path/to/Example.tsx scss` will create `Example.jsx`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
 1. `CompLayout simple/complex/all/folder`: close all windows and layout complonent files.
 1. `CompLayoutAuto simple/complex/all/folder/disable`: set auto layout when opening files
-1. `CompAlt`: switch index -> template (if has) -> style -> script -> index -> template (if has) ... file
+1. `CompAlt`: switch `main file` -> `script file` (optional) -> `style file` (optional) -> `index file` (optional) -> `main file` -> ...
 1. `CompReset`: reset the status of the plugin
 1. `CompRename`: rename all files of a vue component, and change style/script file path in template file
    - `CompRename NewName` will rename vue/style/script file to `NewName.vue`, `NewName.comp.css`, `NewName.comp.js`
@@ -138,6 +135,7 @@ A component is composed by:
     - If the value is `complex`, command `:CompLayout complex` will be called
     - If the value is `all`, command `:CompLayout all` will be called
     - If the value is `folder`, command `:CompLayout folder` will be called
+
 ## Support
 
 This toolkit supports component like:
@@ -145,7 +143,6 @@ This toolkit supports component like:
 1. [Vue](https://vuejs.org/)
 1. [wepy](https://github.com/Tencent/wepy)
 1. [React](https://reactjs.org/docs/react-component.html)
-
 
 ## TODO
 
