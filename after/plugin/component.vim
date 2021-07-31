@@ -138,10 +138,10 @@ function! s:FormatDate()
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFile(filePath, templateDir, componentName, scriptExtension, styleExtension, templateExtension)
+function! s:CreateAndWriteFile(filePath, templateDir, componentName, scriptExtension, styleExtension, mainExtension)
     let mainFilePath = s:findMainFile(a:filePath, a:templateDir)
     let templateText = s:ReadFile(mainFilePath)
-    let middleName = get(s:middleName, a:templateExtension)
+    let middleName = get(s:middleName, a:mainExtension)
 
     let content = ''
     let dateAsString = s:FormatDate()
@@ -155,7 +155,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, scriptExten
         let newText = substitute(newText, '\<component-name\>\C', kebabCase, 'g')
         let newText = substitute(newText, '\<componentName\>\C', camelCase, 'g')
         let newText = substitute(newText, '\<MIDDLE_NAME\>\C', middleName, 'g')
-        let newText = substitute(newText, '\<TEMPLATE_EXTENSION\>\C', a:templateExtension, 'g')
+        let newText = substitute(newText, '\<TEMPLATE_EXTENSION\>\C', a:mainExtension, 'g')
         let newText = substitute(newText, '\<STYLE_EXTENSION\>\C', a:styleExtension, 'g')
         let newText = substitute(newText, '\<SCRIPT_EXTENSION\>\C', a:scriptExtension, 'g')
         let newText = substitute(newText, '\<CREATE_DATE\>\C', dateAsString, 'g')
@@ -198,7 +198,7 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
 endfunction
 
 " @return {0|1}
-function! s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, templateExtension)
+function! s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, mainExtension)
     for theFile in a:fileList
         if filereadable(theFile)
             echoerr theFile . ' does exist!'
@@ -215,7 +215,7 @@ function! s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExt
     let componentName = s:GetComponentName(a:mainFile)
 
     for theFile in a:fileList
-        call s:CreateAndWriteFile(theFile, templateDir, componentName, a:scriptExtension, a:styleExtension, a:templateExtension)
+        call s:CreateAndWriteFile(theFile, templateDir, componentName, a:scriptExtension, a:styleExtension, a:mainExtension)
     endfor
     return 1
 endfunction
@@ -226,8 +226,8 @@ function! s:MakeCssFile(mainFile, extension)
     if theExtension ==# ''
         let theExtension = s:styleExtension
     endif
-    let templateExtension = fnamemodify(a:mainFile, ':e')
-    let middleName = get(s:middleName, templateExtension)
+    let mainExtension = fnamemodify(a:mainFile, ':e')
+    let middleName = get(s:middleName, mainExtension)
     let cssFile = fnamemodify(a:mainFile, ':r') . '.' . middleName .'.' . theExtension
     return cssFile
 endfunction
@@ -251,8 +251,8 @@ function! s:MakeScriptFile(mainFile, extension)
     if theExtension ==# ''
         let theExtension = s:scriptExtension
     endif
-    let templateExtension = fnamemodify(a:mainFile, ':e')
-    let middleName = get(s:middleName, templateExtension)
+    let mainExtension = fnamemodify(a:mainFile, ':e')
+    let middleName = get(s:middleName, mainExtension)
     let scriptFile = fnamemodify(a:mainFile, ':r') . '.' . middleName . '.' . theExtension
     return scriptFile
 endfunction
@@ -366,7 +366,7 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
         return result
     endif
 
-    let templateExtension = fnamemodify(a:mainFile, ':e')
+    let mainExtension = fnamemodify(a:mainFile, ':e')
     let length = len(a:args)
 
     let cssExtension = s:styleExtension
@@ -388,15 +388,15 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
     endif
 
     "  针对 *.tsx/*.jsx 特殊处理
-    if templateExtension ==# 'tsx'
+    if mainExtension ==# 'tsx'
         let scriptExtension = 'ts'
-    elseif templateExtension ==# 'jsx'
+    elseif mainExtension ==# 'jsx'
         let scriptExtension = 'js'
     endif
 
 
     let result['mainFile'] =  a:mainFile
-    let result['templateExtension'] = templateExtension
+    let result['mainExtension'] = mainExtension
     let result['styleExtension'] = cssExtension
     let result['scriptExtension'] = scriptExtension
     return result
@@ -417,12 +417,12 @@ function! s:CreateComponent(...)
 
     let scriptExtension = get(config, 'scriptExtension')
     let styleExtension = get(config, 'styleExtension')
-    let templateExtension = get(config, 'templateExtension')
+    let mainExtension = get(config, 'mainExtension')
 
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
     let cssFile = s:MakeCssFile(mainFile, styleExtension)
 
-    if templateExtension ==# 'tsx' || templateExtension ==# 'jsx'
+    if mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
         " *.tsx/*.jsx 不需要 script
         let fileList = [mainFile, cssFile]
     else
@@ -430,7 +430,7 @@ function! s:CreateComponent(...)
     endif
 
 
-    let isCreateOk = s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, templateExtension)
+    let isCreateOk = s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, mainExtension)
     if !isCreateOk
         return
     endif
@@ -459,24 +459,24 @@ function! s:CreateComponentWithFolder(...)
 
     let scriptExtension = get(config, 'scriptExtension')
     let styleExtension = get(config, 'styleExtension')
-    let templateExtension = get(config, 'templateExtension')
+    let mainExtension = get(config, 'mainExtension')
 
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
     let cssFile = s:MakeCssFile(mainFile, styleExtension)
     let indexFile = s:MakeIndexFile(mainFile, scriptExtension)
 
 
-    if templateExtension ==# 'wpy'
+    if mainExtension ==# 'wpy'
         " *.wpy 不需要 index
         let fileList = [mainFile, scriptFile, cssFile]
-    elseif templateExtension ==# 'tsx' || templateExtension ==# 'jsx'
+    elseif mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
         " *.tsx/*.jsx 不需要 script
         let fileList = [indexFile, mainFile, cssFile]
     else
         let fileList = [indexFile, mainFile, scriptFile, cssFile]
     endif
 
-    let isCreateOk =   s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, templateExtension)
+    let isCreateOk =   s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, mainExtension)
     if !isCreateOk
         return
     endif
@@ -1555,9 +1555,9 @@ function! s:BuildIndexFile(mainFile, scriptFileExt)
     if strlen(indexFilePath) > 0
         let templateDir = s:FindTemplateDirWithType(a:mainFile)
         let componentName = s:GetComponentName(a:mainFile)
-        let templateExtension = fnamemodify(a:mainFile, ':e')
+        let mainExtension = fnamemodify(a:mainFile, ':e')
 
-        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, a:scriptFileExt, 'STYLE_EXTENSION', templateExtension)
+        call s:CreateAndWriteFile(indexFilePath, templateDir, componentName, a:scriptFileExt, 'STYLE_EXTENSION', mainExtension)
     endif
 endfunction
 
