@@ -34,7 +34,7 @@ let s:kit_component_layout_doing = 0
 " wpy is used for https://github.com/Tencent/wepy
 let s:supportTemplateExtensionList = ['vue', 'wpy', 'tsx', 'jsx']
 let s:supportScriptExtensionList = [ 'js', 'ts', 'json']
-let s:supportCssExtensionList = ['css', 'scss', 'less']
+let s:supportStyleExtensionList = ['css', 'scss', 'less']
 let s:extensionLangMap = {
             \'js': 'javascript',
             \ 'ts': 'ts',
@@ -45,7 +45,7 @@ let s:extensionLangMap = {
 let s:supportExtensionFullList = []
 call extend(s:supportExtensionFullList, s:supportTemplateExtensionList)
 call extend(s:supportExtensionFullList, s:supportScriptExtensionList)
-call extend(s:supportExtensionFullList, s:supportCssExtensionList)
+call extend(s:supportExtensionFullList, s:supportStyleExtensionList)
 
 
 if exists('g:kit_component_middle_name') && strlen(g:kit_component_middle_name) > 0
@@ -68,8 +68,8 @@ if index(s:supportScriptExtensionList, s:scriptExtension) == -1
     call add(s:supportScriptExtensionList, s:scriptExtension)
 endif
 
-if index(s:supportCssExtensionList, s:styleExtension) == -1
-    call add(s:supportCssExtensionList, s:styleExtension)
+if index(s:supportStyleExtensionList, s:styleExtension) == -1
+    call add(s:supportStyleExtensionList, s:styleExtension)
 endif
 
 " const variable, readonly
@@ -221,15 +221,15 @@ function! s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExt
 endfunction
 
 
-function! s:MakeCssFile(mainFile, extension)
+function! s:MakeStyleFile(mainFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
         let theExtension = s:styleExtension
     endif
     let mainExtension = fnamemodify(a:mainFile, ':e')
     let middleName = get(s:middleName, mainExtension)
-    let cssFile = fnamemodify(a:mainFile, ':r') . '.' . middleName .'.' . theExtension
-    return cssFile
+    let styleFile = fnamemodify(a:mainFile, ':r') . '.' . middleName .'.' . theExtension
+    return styleFile
 endfunction
 
 "@param {string} mainFile
@@ -257,10 +257,10 @@ function! s:MakeScriptFile(mainFile, extension)
     return scriptFile
 endfunction
 
-function! s:MakeCssFileList(mainFile)
+function! s:MakeStyleFileList(mainFile)
     let fileList = []
-    for extension in s:supportCssExtensionList
-        let file = s:MakeCssFile(a:mainFile, extension)
+    for extension in s:supportStyleExtensionList
+        let file = s:MakeStyleFile(a:mainFile, extension)
         call add(fileList, file)
     endfor
     return fileList
@@ -376,7 +376,7 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
         let counter = 1
         while counter < length
             let item = get(a:args, counter)
-            if index(s:supportCssExtensionList, item) > -1
+            if index(s:supportStyleExtensionList, item) > -1
                 let cssExtension = item
             elseif index(s:supportScriptExtensionList, item) > -1
                 let scriptExtension = item
@@ -420,13 +420,13 @@ function! s:CreateComponent(...)
     let mainExtension = get(config, 'mainExtension')
 
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
-    let cssFile = s:MakeCssFile(mainFile, styleExtension)
+    let styleFile = s:MakeStyleFile(mainFile, styleExtension)
 
     if mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
         " *.tsx/*.jsx 不需要 script
-        let fileList = [mainFile, cssFile]
+        let fileList = [mainFile, styleFile]
     else
-        let fileList = [mainFile, scriptFile, cssFile]
+        let fileList = [mainFile, scriptFile, styleFile]
     endif
 
 
@@ -462,18 +462,18 @@ function! s:CreateComponentWithFolder(...)
     let mainExtension = get(config, 'mainExtension')
 
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
-    let cssFile = s:MakeCssFile(mainFile, styleExtension)
+    let styleFile = s:MakeStyleFile(mainFile, styleExtension)
     let indexFile = s:MakeIndexFile(mainFile, scriptExtension)
 
 
     if mainExtension ==# 'wpy'
         " *.wpy 不需要 index
-        let fileList = [mainFile, scriptFile, cssFile]
+        let fileList = [mainFile, scriptFile, styleFile]
     elseif mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
         " *.tsx/*.jsx 不需要 script
-        let fileList = [indexFile, mainFile, cssFile]
+        let fileList = [indexFile, mainFile, styleFile]
     else
-        let fileList = [indexFile, mainFile, scriptFile, cssFile]
+        let fileList = [indexFile, mainFile, scriptFile, styleFile]
     endif
 
     let isCreateOk =   s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, mainExtension)
@@ -496,7 +496,7 @@ function! s:FindScriptFile(mainFile)
 endfunction
 
 function! s:FindStyleFile(mainFile)
-    let fileList = s:MakeCssFileList(a:mainFile)
+    let fileList = s:MakeStyleFileList(a:mainFile)
     for theFile in fileList
         if filereadable(theFile)
             return theFile
@@ -527,8 +527,8 @@ endfunction
 
 
 "@param {string} mainFile
-"@param {0|1} includeCss
-function! s:LayoutComponent(mainFile, includeCss, includeIndex)
+"@param {0|1} includeStyle
+function! s:LayoutComponent(mainFile, includeStyle, includeIndex)
     if exists('*timer_start')
        if s:kit_component_layout_doing
             return
@@ -537,7 +537,7 @@ function! s:LayoutComponent(mainFile, includeCss, includeIndex)
     endif
 
     let scriptFile = s:FindScriptFile(a:mainFile)
-    let cssFile = s:FindStyleFile(a:mainFile)
+    let styleFile = s:FindStyleFile(a:mainFile)
     let withFolder = s:DetectFolder(a:mainFile)
     let indexFile = s:FindIndexFile(a:mainFile)
 
@@ -547,7 +547,7 @@ function! s:LayoutComponent(mainFile, includeCss, includeIndex)
         let fileCount +=1
     endif
 
-    if strlen(cssFile)
+    if strlen(styleFile)
         let fileCount +=1
     endif
 
@@ -560,36 +560,36 @@ function! s:LayoutComponent(mainFile, includeCss, includeIndex)
     if strlen(scriptFile) > 0
         execute ':new ' . scriptFile
         execute ':only'
-        if a:includeCss && strlen(cssFile) > 0
+        if a:includeStyle && strlen(styleFile) > 0
             if withFolder
                 if a:includeIndex
                     execute ':vnew ' . indexFile
-                    execute ':new ' . cssFile
+                    execute ':new ' . styleFile
                     execute ':new ' . a:mainFile
                 else
-                    execute ':vnew ' . cssFile
+                    execute ':vnew ' . styleFile
                     execute ':new ' . a:mainFile
                 endif
             else
-                execute ':vnew ' . cssFile
+                execute ':vnew ' . styleFile
                 execute ':new ' . a:mainFile
             endif
         else
             execute ':vnew ' . a:mainFile
         endif
     else
-        if a:includeCss && strlen(cssFile) > 0
+        if a:includeStyle && strlen(styleFile) > 0
             execute ':new ' . a:mainFile
             execute ':only'
             if withFolder
                 if a:includeIndex
                     execute ':vnew ' . indexFile
-                    execute ':new ' . cssFile
+                    execute ':new ' . styleFile
                 else
-                    execute ':vnew ' . cssFile
+                    execute ':vnew ' . styleFile
                 endif
             else
-                execute ':vnew ' . cssFile
+                execute ':vnew ' . styleFile
             endif
         else
             " echomsg 'There is no script/style file'
@@ -625,10 +625,10 @@ function! s:GetMainFileByFile(file)
         let mainFile = s:FindMainFile(prefix)
     elseif index(s:supportTemplateExtensionList, extension) > -1
         let mainFile = a:file
-    elseif index(s:supportCssExtensionList, extension) > -1
-        let cssFile = fnamemodify(a:file, ':r')
-        let cssFileWithoutMiddle = fnamemodify(cssFile, ':r')
-        let mainFile = s:FindMainFile(cssFileWithoutMiddle)
+    elseif index(s:supportStyleExtensionList, extension) > -1
+        let styleFile = fnamemodify(a:file, ':r')
+        let styleFileWithoutMiddle = fnamemodify(styleFile, ':r')
+        let mainFile = s:FindMainFile(styleFileWithoutMiddle)
     elseif index(s:supportScriptExtensionList, extension) > -1
         let scriptFile = fnamemodify(a:file, ':r')
         let scriptFileWithoutMiddle = fnamemodify(scriptFile, ':r')
@@ -725,7 +725,7 @@ function! s:SwitchCurrentComponent()
         let currentType = 'index'
     elseif index(s:supportTemplateExtensionList, extension) > -1
         let currentType = 'template'
-    elseif index(s:supportCssExtensionList, extension) > -1
+    elseif index(s:supportStyleExtensionList, extension) > -1
         let currentType = 'css'
     elseif index(s:supportScriptExtensionList, extension) > -1
         let currentType = 'script'
@@ -1104,7 +1104,7 @@ function! s:RenameExtension(extension, bang)
     let isScript = 1
 
 
-    if index(s:supportCssExtensionList, a:extension) > -1
+    if index(s:supportStyleExtensionList, a:extension) > -1
         let filePath = s:FindStyleFile(mainFile)
         let isScript = 0
     elseif index(s:supportScriptExtensionList, a:extension) > -1
@@ -1512,10 +1512,10 @@ function! s:RemoveComponentWithMainFile(mainFile)
         endif
     else
         let scriptFile = s:FindScriptFile(a:mainFile)
-        let cssFile = s:FindStyleFile(a:mainFile)
+        let styleFile = s:FindStyleFile(a:mainFile)
         let removedFileList = []
         call s:RemoveFile(scriptFile, removedFileList)
-        call s:RemoveFile(cssFile, removedFileList)
+        call s:RemoveFile(styleFile, removedFileList)
         call s:RemoveFile(a:mainFile, removedFileList)
 
         if len(removedFileList)
@@ -1577,11 +1577,11 @@ function! s:FolderizeComponentWithMainFile(mainFile)
     endif
 
     let scriptFile = s:FindScriptFile(a:mainFile)
-    let cssFile = s:FindStyleFile(a:mainFile)
+    let styleFile = s:FindStyleFile(a:mainFile)
     let movedFileList = []
 
     call s:MoveFileToFolder(scriptFile, folderPath, movedFileList)
-    call s:MoveFileToFolder(cssFile, folderPath, movedFileList)
+    call s:MoveFileToFolder(styleFile, folderPath, movedFileList)
     call s:MoveFileToFolder(a:mainFile, folderPath, movedFileList)
 
     if len(movedFileList) > 0
