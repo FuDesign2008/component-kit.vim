@@ -155,7 +155,7 @@ function! s:CreateAndWriteFile(filePath, templateDir, componentName, scriptExten
         let newText = substitute(newText, '\<component-name\>\C', kebabCase, 'g')
         let newText = substitute(newText, '\<componentName\>\C', camelCase, 'g')
         let newText = substitute(newText, '\<MIDDLE_NAME\>\C', middleName, 'g')
-        let newText = substitute(newText, '\<TEMPLATE_EXTENSION\>\C', a:mainExtension, 'g')
+        let newText = substitute(newText, '\<MAIN_EXTENSION\>\C', a:mainExtension, 'g')
         let newText = substitute(newText, '\<STYLE_EXTENSION\>\C', a:styleExtension, 'g')
         let newText = substitute(newText, '\<SCRIPT_EXTENSION\>\C', a:scriptExtension, 'g')
         let newText = substitute(newText, '\<CREATE_DATE\>\C', dateAsString, 'g')
