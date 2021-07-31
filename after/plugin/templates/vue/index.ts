@@ -4,6 +4,6 @@
  * @date  CREATE_DATE
  */
 
-import ComponentName from './ComponentName.TEMPLATE_EXTENSION'
+import ComponentName from './ComponentName.MAIN_EXTENSION'
 
 export { ComponentName }

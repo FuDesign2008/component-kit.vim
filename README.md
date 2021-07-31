@@ -1,19 +1,53 @@
 # component-kit.vim
 
-Toolkit for generate/refract/layout component
+> Toolkit for generate/refract/layout component
 
-## Config
+## Screenshot
 
-1.  `g:kit_component_middle_name`: The middle name for creating & finding script/style file, default is `{ 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'module' }`
-1.  `g:kit_component_script_extension`: The extension for creating & finding script file, default is `'js'`
-1.  `g:kit_component_css_extension`: The extension for creating & finding style file, default is `'css'`
-1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.kit-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `TEMPLATE_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
-1.  `g:kit_component_auto_layout`: Call `:CompLayout` automatically when opening `*.vue`/`*.wpy` or `index.js/index.ts` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
-    - If the value is `disable`, no command will be called
-    - If the value is `simple`, command `:CompLayout simple` will be called
-    - If the value is `complex`, command `:CompLayout complex` will be called
-    - If the value is `all`, command `:CompLayout all` will be called
-    - If the value is `folder`, command `:CompLayout folder` will be called
+![layout](./docs/layout.gif)
+
+## Introduction
+
+A vue/react component is composed by:
+
+1. main file: e.g. `ComponentName.vue`/`ComponentName.tsx`
+1. script file (optional): e.g. `ComponentName.comp.js`
+1. style file (optional): e.g. `ComponentName.comp.css`/`ComponentName.module.css`
+1. index file (optional): `index.js`/`index.ts`
+1. utils files... (optional)
+
+
+A component may be organized in a folder, e.g.
+
+
+```bash
+components
+    ├── ComponentNameA
+    │   ├── ComponentNameA.comp.scss      // style file
+    │   ├── ComponentNameA.comp.ts        // script file
+    │   ├── ComponentNameA.vue            // main file
+    │   └── index.ts                      // inde file
+    │
+    └── ComponentNameB
+         ├── ComponentNameB.module.scss    // style file
+         ├── ComponentNameB.tsx            // main file
+         └── index.ts                      // index file
+```
+
+Or be organized without a folder, e.g.
+
+
+```bash
+components
+    ├── ComponentNameA.comp.scss       // style file
+    ├── ComponentNameA.comp.ts         // script file
+    ├── ComponentNameA.vue             // main file
+    ├── ComponentNameB.module.scss     // style file
+    └── ComponentNameB.tsx             // main file
+
+```
+
+
 
 ## Commands
 
@@ -49,7 +83,7 @@ A component is composed by:
 1. script file (optional)
 1. style file (optional)
 1. index file (optional)
-1. utils file... (optional)
+1. utils files... (optional)
 
 - `folder` = the component folder
 - `all` = `1 + 2 + 3 + 4` (default value)
@@ -92,6 +126,18 @@ A component is composed by:
 
 ```
 
+## Config
+
+1.  `g:kit_component_middle_name`: The middle name for creating & finding script/style file, default is `{ 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'module' }`
+1.  `g:kit_component_script_extension`: The extension for creating & finding script file, default is `'js'`
+1.  `g:kit_component_css_extension`: The extension for creating & finding style file, default is `'css'`
+1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on. - If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin - If `g:kit_component_template_dir` is not set, the plugin will find `.kit-component-template` directory up util home (`~`) - The word `ComponentName`/`component-name` in template files will be replaced by true component name - The word `MAIN_EXTENSION/STYLE_EXTENSION`/`SCRIPT_EXTENSION` in template files will be replaced by vue/style/script extension for creating
+1.  `g:kit_component_auto_layout`: Call `:CompLayout` automatically when opening `*.vue`/`*.wpy` or `index.js/index.ts` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
+    - If the value is `disable`, no command will be called
+    - If the value is `simple`, command `:CompLayout simple` will be called
+    - If the value is `complex`, command `:CompLayout complex` will be called
+    - If the value is `all`, command `:CompLayout all` will be called
+    - If the value is `folder`, command `:CompLayout folder` will be called
 ## Support
 
 This toolkit supports component like:
@@ -100,9 +146,6 @@ This toolkit supports component like:
 1. [wepy](https://github.com/Tencent/wepy)
 1. [React](https://reactjs.org/docs/react-component.html)
 
-## Screenshot
-
-![layout](./docs/layout.gif)
 
 ## TODO
 
