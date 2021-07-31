@@ -550,7 +550,7 @@ function! s:LayoutComponent(mainFile, includeStyle, includeIndex)
     let withFolder = s:DetectFolder(a:mainFile)
     let indexFile = s:FindIndexFile(a:mainFile)
 
-    " Now the template file
+    " Now the main file
     let fileCount = 1
     if strlen(scriptFile)
         let fileCount +=1
@@ -663,7 +663,7 @@ function! s:LayoutCurrentComponent(includeIndex)
     if strlen(mainFile) > 0
         call s:LayoutComponent(mainFile, 1, a:includeIndex)
     else
-        echomsg 'Can not find template file for current buffer'
+        echomsg 'Can not find main file for current buffer'
     endif
 endfunction
 
@@ -683,7 +683,7 @@ function! s:LayoutTemplateAndScript()
     if strlen(mainFile) > 0
         call s:LayoutComponent(mainFile, 0, 0)
     else
-        echomsg 'Can not find template file for current buffer'
+        echomsg 'Can not find main file for current buffer'
     endif
 endfunction
 
@@ -692,9 +692,9 @@ function! s:GetNextFile(mainFile, currentType)
 
     if a:currentType ==# 'index'
         let nextFile = a:mainFile
-    elseif a:currentType ==# 'template'
+    elseif a:currentType ==# 'main'
         let nextFile = s:FindStyleFile(a:mainFile)
-    elseif a:currentType ==# 'css'
+    elseif a:currentType ==# 'style'
         let nextFile = s:FindScriptFile(a:mainFile)
     elseif a:currentType ==# 'script'
         let nextFile = s:FindIndexFile(a:mainFile)
@@ -706,7 +706,7 @@ endfunction
 " @param {String} mainFile
 " @param {String} currentType  valid values: template, css, script, index
 function! s:SwitchFile(mainFile, currentType)
-    let orderList = ['index', 'template', 'css', 'script']
+    let orderList = ['index', 'main', 'style', 'script']
     let targetFile = ''
 
     for type in orderList
@@ -733,9 +733,9 @@ function! s:SwitchCurrentComponent()
     if s:IsIndexFile(file)
         let currentType = 'index'
     elseif index(s:supportTemplateExtensionList, extension) > -1
-        let currentType = 'template'
+        let currentType = 'main'
     elseif index(s:supportStyleExtensionList, extension) > -1
-        let currentType = 'css'
+        let currentType = 'style'
     elseif index(s:supportScriptExtensionList, extension) > -1
         let currentType = 'script'
     endif
@@ -743,7 +743,7 @@ function! s:SwitchCurrentComponent()
     if strlen(mainFile) > 0
         call s:SwitchFile(mainFile, currentType)
     else
-        echomsg 'Can not find template file for current buffer'
+        echomsg 'Can not find main file for current buffer'
     endif
 endfunction
 
@@ -949,7 +949,7 @@ endfunction
 function! s:RenameComponent(name, bang)
     let mainFile = s:GetMainFileByCurrent()
     if strlen(mainFile) <= 0
-        echoerr 'Can not find template file for current buffer'
+        echoerr 'Can not find main file for current buffer'
         return
     endif
 
@@ -1105,7 +1105,7 @@ function! s:RenameExtension(extension, bang)
 
     let mainFile = s:GetMainFileByCurrent()
     if strlen(mainFile) == 0
-        echoerr 'Can not find template file for current buffer'
+        echoerr 'Can not find main file for current buffer'
         return
     endif
 
@@ -1542,7 +1542,7 @@ function! s:RemoveCurrentComponent()
     if strlen(mainFile) > 0
         call s:RemoveComponentWithMainFile(mainFile)
     else
-        echomsg 'Can not find template file for current buffer.'
+        echomsg 'Can not find main file for current buffer.'
     endif
 endfunction
 
@@ -1618,7 +1618,7 @@ function! s:FolderizeCurrentComponent()
     if strlen(mainFile) > 0
         call s:FolderizeComponentWithMainFile(mainFile)
     else
-        echomsg 'Can not find template file for current buffer.'
+        echomsg 'Can not find main file for current buffer.'
     endif
 endfunction
 
