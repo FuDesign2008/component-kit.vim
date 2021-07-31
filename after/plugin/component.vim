@@ -545,6 +545,9 @@ function! s:LayoutComponent(mainFile, includeStyle, includeIndex)
             return
         endif
         let s:kit_component_layout_doing = 1
+    else
+        echoerr 'Vim does not support timer'
+        return
     endif
 
     let scriptFile = s:FindScriptFile(a:mainFile)
@@ -729,6 +732,16 @@ endfunction
 let s:kit_component_switch_file = 0
 
 function! s:SwitchCurrentComponent()
+    if exists('*timer_start')
+       if s:kit_component_switch_file
+            return
+        endif
+        let s:kit_component_switch_file = 1
+    else
+        echoerr 'Vim does not support timer'
+        return
+    endif
+
     let file = expand('%')
     let extension = fnamemodify(file, ':e')
 
@@ -744,16 +757,15 @@ function! s:SwitchCurrentComponent()
         let currentType = 'script'
     endif
 
-
-    let s:kit_component_switch_file = 1
-
     if strlen(mainFile) > 0
         call s:SwitchFile(mainFile, currentType)
     else
         echomsg 'Can not find main file for current buffer'
     endif
 
-    let s:kit_component_switch_file = 0
+    if exists('*timer_start')
+        call timer_start(500, 'KitSwitchFileEnd')
+    endif
 endfunction
 
 function! s:ResetStatus()
@@ -1661,6 +1673,9 @@ function! KitLayoutComponentEnd(timer)
     call s:ResetStatus()
 endfunction
 
+function! KitSwitchFileEnd(timer)
+    call s:ResetStatus()
+endfunction
 
 function! KitLayoutAutoWithDelay()
     if s:autoLayout ==# 'disable'
