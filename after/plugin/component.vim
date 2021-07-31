@@ -496,6 +496,7 @@ function! s:CreateComponentWithFolder(...)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
+" @return {string}
 function! s:FindScriptFile(mainFile)
     let fileList = s:MakeScriptFileList(a:mainFile)
     for theFile in fileList
@@ -506,6 +507,7 @@ function! s:FindScriptFile(mainFile)
     return ''
 endfunction
 
+" @return {string}
 function! s:FindStyleFile(mainFile)
     let fileList = s:MakeStyleFileList(a:mainFile)
     for theFile in fileList
@@ -516,6 +518,7 @@ function! s:FindStyleFile(mainFile)
     return ''
 endfunction
 
+" @return {string}
 function! s:FindIndexFile(mainFile)
     let fileList = s:MakeIndexFileList(a:mainFile)
     for theFile in fileList
@@ -692,40 +695,52 @@ function! s:LayoutTemplateAndScript()
     endif
 endfunction
 
-function! s:GetNextFile(mainFile, currentType)
-    let nextFile = ''
+function! s:getFileByType(mainFile, type)
+    let theFile = ''
 
-    if a:currentType ==# 'index'
-        let nextFile = a:mainFile
-    elseif a:currentType ==# 'main'
-        let nextFile = s:FindStyleFile(a:mainFile)
-    elseif a:currentType ==# 'style'
-        let nextFile = s:FindScriptFile(a:mainFile)
-    elseif a:currentType ==# 'script'
-        let nextFile = s:FindIndexFile(a:mainFile)
+    if a:type ==# 'index'
+        let theFile = s:FindIndexFile(a:mainFile)
+    elseif a:type ==# 'main'
+        let theFile = a:mainFile
+    elseif a:type ==# 'style'
+        let theFile = s:FindStyleFile(a:mainFile)
+    elseif a:type ==# 'script'
+        let theFile = s:FindScriptFile(a:mainFile)
     endif
 
-    return nextFile
+    return theFile
 endfunction
 
 " @param {String} mainFile
-" @param {String} currentType  valid values: template, css, script, index
+" @param {String} currentType  valid values: template, style, script, index
 function! s:SwitchFile(mainFile, currentType)
-    let orderList = ['index', 'main', 'style', 'script']
+    let orderList = ['main', 'script', 'style', 'index']
     let targetFile = ''
+    let currentIndex = index(orderList, a:currentType)
+    if currentIndex == -1
+        return
+    endif
 
-    for type in orderList
-        let nextFile = s:GetNextFile(a:mainFile, type)
+    let length = len(orderList)
+
+    let theIndex = currentIndex + 1
+    let limit = theIndex + length
+
+    while theIndex < limit
+        let indexInArray = theIndex % length
+        let theType = get(orderList, indexInArray, '')
+        let nextFile = s:getFileByType(a:mainFile, theType)
         if !empty(nextFile)
             let targetFile = nextFile
             break
         endif
-    endfor
+        let theIndex += 1
+    endwhile
 
     if strlen(targetFile) > 0
         execute ':e ' targetFile
     else
-        echomsg 'Can not find '. a:currentType . 'for current buffer'
+        echomsg 'Can not find next file for current buffer'
     endif
 endfunction
 
