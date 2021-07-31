@@ -25,7 +25,9 @@ let s:middleName = { 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'modu
 let s:scriptExtension = 'js'
 let s:styleExtension = 'css'
 
-let s:autoLayout = 'all'
+let s:auto_layout_default = 'all'
+
+let s:autoLayout = s:auto_layout_default
 
 let s:kit_component_layout_doing = 0
 
@@ -1633,13 +1635,13 @@ endfunction
 " @params {string} mode  simple, complex, all, disable, folder
 function! s:SetAutoLayout(...)
     if a:0 == 0
-        let s:autoLayout = 'all'
+        let s:autoLayout = s:auto_layout_default
     else
         let modes = ['simple', 'complex', 'all', 'disable', 'folder']
         if index(modes, a:1) > -1
             let s:autoLayout = a:1
         else
-            let s:autoLayout = 'all'
+            let s:autoLayout = s:auto_layout_default
         endif
     endif
 
