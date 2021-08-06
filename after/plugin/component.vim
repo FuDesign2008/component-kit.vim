@@ -789,15 +789,15 @@ function! s:ResetStatus()
 endfunction
 
 
-function! s:isQuickFixOpened()
-    for index in range(1, winnr('$'))
-        let bnum = winbufnr(index)
-        if getbufvar(bnum, '&buftype') ==# 'quickfix'
-            return 1
-        endif
-    endfor
-    return 0
-endfunction
+" function! s:isQuickFixOpened()
+    " for index in range(1, winnr('$'))
+        " let bnum = winbufnr(index)
+        " if getbufvar(bnum, '&buftype') ==# 'quickfix'
+            " return 1
+        " endif
+    " endfor
+    " return 0
+" endfunction
 
 
 "return 0 or 1
@@ -1676,10 +1676,10 @@ function! s:SetAutoLayout(...)
 endfunction
 
 function! KitLayoutAuto(timer)
-    let isOpen =  s:isQuickFixOpened()
-    if isOpen
-        return
-    endif
+    " let isOpen =  s:isQuickFixOpened()
+    " if isOpen
+        " return
+    " endif
 
     call s:DoCompLayoutWithMode(s:autoLayout)
 endfunction
