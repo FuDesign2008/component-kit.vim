@@ -24,6 +24,9 @@ export default defineComponent({
   setup(/*props, context*/) {
     // TODO
     return {
+      /** internal data or methods **/
+      // TODO
+      /** public data or methods **/
       // TODO
     }
   },
