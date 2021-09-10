@@ -13,7 +13,6 @@ import {
   // PropType,
 } from '@vue/composition-api'
 import styles from './ComponentName.module.scss'
-import classnames from 'classnames'
 
 export default defineComponent({
   name: 'ComponentName',
@@ -35,7 +34,10 @@ export default defineComponent({
     // TODO
     return (
       <div
-        class={classnames('component-name', styles.componentName)}
+        class={{
+          'component-name': true,
+          [styles.componentName]: true,
+        }}
       >
         // TODO
       </div>
