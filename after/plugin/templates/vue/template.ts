@@ -12,7 +12,7 @@ import Component /*, { mixins } */ from 'vue-class-component'
 /* eslint-disable @typescript-eslint/member-ordering */
 
 @Component({
-  // name: '',
+  name: 'ComponentName',
   // el: '#id',
   // components: {
   // TODO

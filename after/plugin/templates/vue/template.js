@@ -4,10 +4,11 @@
  * @date  CREATE_DATE
  */
 
+import Vue from 'vue'
 // import { mapState, mapGetters, mapActions } from 'vuex'
 
-export default {
-  // name: '',
+export default Vue.extend({
+  name: 'ComponentName',
 
   // el: '#id',
 
@@ -64,4 +65,4 @@ export default {
   // updated() {},
   // beforeDestroy() {},
   // destroyed() {},
-}
+})
