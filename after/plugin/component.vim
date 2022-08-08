@@ -19,7 +19,13 @@ let s:isDiffMode = &diff
 let s:kit_component = 1
 
 " use when creating  and finding component files
-let s:middleName = { 'vue': 'comp', 'wpy': 'comp', 'jsx': 'module', 'tsx': 'module' }
+let s:middleName = {
+            \ 'vue': 'comp',
+            \ 'wpy': 'comp',
+            \ 'jsx': 'module',
+            \ 'tsx': 'module',
+            \ 'ts': 'module'
+            \ }
 
 " only use when creating component files
 let s:scriptExtension = 'js'
@@ -34,7 +40,7 @@ let s:kit_component_layout_doing = 0
 " only use when finding component files
 "
 " wpy is used for https://github.com/Tencent/wepy
-let s:supportTemplateExtensionList = ['vue', 'wpy', 'tsx', 'jsx']
+let s:supportTemplateExtensionList = ['vue', 'wpy', 'tsx', 'jsx', 'ts']
 let s:supportScriptExtensionList = [ 'js', 'ts', 'json']
 let s:supportStyleExtensionList = ['css', 'scss', 'less']
 let s:extensionLangMap = {
@@ -226,7 +232,7 @@ endfunction
 function! s:MakeStyleFile(mainFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
-        let theExtension = s:styleExtension
+        return ''
     endif
     let mainExtension = fnamemodify(a:mainFile, ':e')
     let middleName = get(s:middleName, mainExtension)
@@ -251,7 +257,7 @@ endfunction
 function! s:MakeScriptFile(mainFile, extension)
     let theExtension = a:extension
     if theExtension ==# ''
-        let theExtension = s:scriptExtension
+        return ''
     endif
     let mainExtension = fnamemodify(a:mainFile, ':e')
     let middleName = get(s:middleName, mainExtension)
@@ -365,8 +371,9 @@ endfunction
 " @interface ComponentInfo {
 "   mainFile: string
 "   mainExtension: string
-"   styleExtension?: string
-"   scriptExtension?: string
+"   styleExtension: string
+"   scriptExtension: string
+"   indexExtension: string
 "   isFolder:0 | 1
 " }
 function! s:ParseCreateParams(args, mainFile, withFolder)
@@ -397,11 +404,20 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
         return result
     endif
 
-    "  针对 *.tsx/*.jsx 特殊处理
+    "  针对 *.tsx/*.jsx/*.ts 特殊处理
     if mainExtension ==# 'tsx'
         let scriptExtension = 'ts'
     elseif mainExtension ==# 'jsx'
         let scriptExtension = 'js'
+    elseif mainExtension ==# 'ts'
+        let scriptExtension = ''
+    endif
+
+    if scriptExtension ==# ''
+        " for .ts as mainExtension
+        let indexExtension = 'ts'
+    else
+        let indexExtension = scriptExtension
     endif
 
 
@@ -409,6 +425,7 @@ function! s:ParseCreateParams(args, mainFile, withFolder)
     let result['mainExtension'] = mainExtension
     let result['styleExtension'] = cssExtension
     let result['scriptExtension'] = scriptExtension
+    let result['indexExtension'] = indexExtension
     let result['isFolder'] = a:withFolder
     return result
 endfunction
@@ -433,8 +450,8 @@ function! s:CreateComponent(...)
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
     let styleFile = s:MakeStyleFile(mainFile, styleExtension)
 
-    if mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
-        " *.tsx/*.jsx 不需要 script
+    if mainExtension ==# 'tsx' || mainExtension ==# 'jsx' || mainExtension ==# 'ts'
+        " *.tsx/*.jsx/*.ts 不需要 script
         let fileList = [mainFile, styleFile]
     else
         let fileList = [mainFile, scriptFile, styleFile]
@@ -471,17 +488,18 @@ function! s:CreateComponentWithFolder(...)
     let scriptExtension = get(config, 'scriptExtension')
     let styleExtension = get(config, 'styleExtension')
     let mainExtension = get(config, 'mainExtension')
+    let indexExtension = get(config, 'indexExtension')
 
     let scriptFile = s:MakeScriptFile(mainFile, scriptExtension)
     let styleFile = s:MakeStyleFile(mainFile, styleExtension)
-    let indexFile = s:MakeIndexFile(mainFile, scriptExtension)
+    let indexFile = s:MakeIndexFile(mainFile, indexExtension)
 
 
     if mainExtension ==# 'wpy'
         " *.wpy 不需要 index
         let fileList = [mainFile, scriptFile, styleFile]
-    elseif mainExtension ==# 'tsx' || mainExtension ==# 'jsx'
-        " *.tsx/*.jsx 不需要 script
+    elseif mainExtension ==# 'tsx' || mainExtension ==# 'jsx' || mainExtension ==# 'ts'
+        " *.tsx/*.jsx/*.ts 不需要 script
         let fileList = [indexFile, mainFile, styleFile]
     else
         let fileList = [indexFile, mainFile, scriptFile, styleFile]
