@@ -48,21 +48,24 @@ components
 
 ## Commands
 
-1. `CompCreate`: create vue component files, syntax `:CompCreate ./path/to/ComponentName.[extension] [script extension]? [style extension]?`
-    - `:CompCreate path/to/Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
-    - `:CompCreate path/to/Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css` files under `path/to` folder
-    - `:CompCreate path/to/Example.vue ts` will create `Example.vue`, `Example.comp.ts`, `Example.comp.css` files
-    - `:CompCreate path/to/Example.vue ts scss` will create `Example.vue`, 'Example.comp.ts', `Example.comp.scss` files
-    - `:CompCreate path/to/Example.jsx` will create `Example.jsx`, `Example.module.css` files under `path/to` folder
-    - `:CompCreate path/to/Example.tsx scss` will create `Example.tsx`, `Example.module.scss` files under `path/to` folder
-1. `CompCreateFolder`: like `CompCreate`, create all files under a folder
-    - `:CompCreateFolder path/to/Example.vue` will create `Example.vue`, `Example.comp.js`, `Example.comp.css`, `index.js` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.wpy` will create `Example.wpy`, `Example.comp.js`, `Example.comp.css`, `index.js` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.vue ts` will create `index.ts`, `Example.vue`, `Example.comp.ts`, `Example.comp.css` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.vue scss` will create `index.ts`, `Example.vue`, `Example.comp.ts`, `Example.comp.scss` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.jsx` will create `Example.jsx`, `Example.module.css`, `index.js` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.tsx scss` will create `Example.tsx`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
-    - `:CompCreateFolder path/to/Example.ts scss` will create `Example.ts`, `Example.module.scss`, `index.ts` files under `path/to/Example` folder
+| command arguments           | main        | script          | style               | index(`CompCreateFolder`) |
+| :-------------------------- | :---------- | :-------------- | :------------------ | :------------------------ |
+| path/to/Example.wpy         | Example.wpy | Example.comp.js | Example.comp.css    | index.js                  |
+| path/to/Example.vue         | Example.vue | Example.comp.js | Example.comp.css    | index.js                  |
+| path/to/Example.vue ts      | Example.vue | Example.comp.ts | Example.comp.css    | index.ts                  |
+| path/to/Example.vue ts scss | Example.vue | Example.comp.ts | Example.comp.scss   | index.ts                  |
+| path/to/Example.jsx         | Example.jsx | -               | Example.module.css  | index.js                  |
+| path/to/Example.jsx scss    | Example.jsx | -               | Example.module.scss | index.js                  |
+| path/to/Example.tsx         | Example.tsx | -               | Example.module.css  | index.ts                  |
+| path/to/Example.tsx scss    | Example.tsx | -               | Example.module.scss | index.ts                  |
+| path/to/Example.ts          | Example.ts  | -               | Example.module.css  | index.ts                  |
+| path/to/Example.ts scss     | Example.ts  | -               | Example.module.scss | index.ts                  |
+
+1. `CompCreate`: create vue component files
+    - syntax `:CompCreate ./path/to/ComponentName.[main-extension] [script-extension]? [style-extension]?`
+    - create main/script(optional)/style files
+1. `CompCreateFolder`: like `CompCreate`, create all files under `path/to/ComponentName` folder
+    - create main/script(optional)/style/index files
 1. `CompLayout simple/complex/all/folder`: close all windows and layout complonent files.
 1. `CompLayoutAuto simple/complex/all/folder/disable`: set auto layout when opening files
 1. `CompAlt`: switch `main file` -> `script file` (optional) -> `style file` (optional) -> `index file` (optional) -> `main file` -> ...
