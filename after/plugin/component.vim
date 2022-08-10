@@ -659,7 +659,13 @@ function! s:GetMainFileByFile(file)
         let prefix = fnamemodify(a:file, ':p:h') . '/' . componentName
         let mainFile = s:FindMainFile(prefix)
     elseif index(s:supportTemplateExtensionList, extension) > -1
-        let mainFile = a:file
+        if extension ==# 'ts'
+            let templateFile = fnamemodify(a:file, ':r')
+            let templateFileWithoutMiddle = fnamemodify(templateFile, ':r')
+            let mainFile = s:FindMainFile(templateFileWithoutMiddle)
+        else
+            let mainFile = a:file
+        endif
     elseif index(s:supportStyleExtensionList, extension) > -1
         let styleFile = fnamemodify(a:file, ':r')
         let styleFileWithoutMiddle = fnamemodify(styleFile, ':r')
