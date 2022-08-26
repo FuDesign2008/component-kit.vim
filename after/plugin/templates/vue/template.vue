@@ -1,9 +1,7 @@
 <template>
-  <div class="component-name">
-    <!-- // TODO -->
-  </div>
+    <div class="component-name">
+        <!-- // TODO -->
+    </div>
 </template>
-<script src="./ComponentName.comp.SCRIPT_EXTENSION" lang="SCRIPT_EXTENSION">
-</script>
-<style src="./ComponentName.comp.STYLE_EXTENSION" lang="STYLE_EXTENSION"  scoped>
-</style>
+<script src="./ComponentName.SCRIPT_EXTENSION" lang="SCRIPT_LANG"></script>
+<style src="./ComponentName.STYLE_EXTENSION" lang="STYLE_LANG" scoped></style>
