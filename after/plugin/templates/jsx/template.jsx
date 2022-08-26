@@ -4,7 +4,7 @@
  * @date  CREATE_DATE
  */
 import React from 'react'
-import styles from './ComponentName.MIDDLE_NAME.scss'
+import styles from './ComponentName.module.scss'
 
 class ComponentName extends React.PureComponent {
   /***************************************************************************
