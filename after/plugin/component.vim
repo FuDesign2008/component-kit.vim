@@ -52,6 +52,16 @@ let s:attributeJoinSplitter = '\n  '
 let s:lineJoinSplitter = '\n'
 let s:lineSplitPattern = '\\n'
 
+function! s:GetLang(fileNameOrExt)
+    if stridx(a:fileNameOrExt, '.') > -1
+        let lastExt = fnamemodify(a:fileNameOrExt, ':e')
+    else
+        let lastExt = a:fileNameOrExt
+    endif
+    let lang = get(s:extensionLangMap, lastExt, '')
+    return lang
+endfunction
+
 function! s:IsIndexFile(file)
     let index = matchend(a:file, 'index\.[jt]s')
     return index > -1
@@ -238,35 +248,6 @@ function! s:MakeScriptFile(mainFile, extension)
     return scriptFile
 endfunction
 
-" function! s:MakeStyleFileList(mainFile)
-    " let fileList = []
-    " for extension in s:supportStyleExtensionList
-        " let file = s:MakeStyleFile(a:mainFile, extension)
-        " call add(fileList, file)
-    " endfor
-    " return fileList
-" endfunction
-
-" function! s:MakeScriptFileList(mainFile)
-    " let fileList = []
-    " for extension in s:supportScriptExtensionList
-        " let file = s:MakeScriptFile(a:mainFile, extension)
-        " call add(fileList, file)
-    " endfor
-    " return fileList
-" endfunction
-
-" function! s:MakeIndexFileList(mainFile)
-    " let fileList = []
-    " for extension in s:supportScriptExtensionList
-        " let file = s:MakeIndexFile(a:mainFile, extension)
-        " if len(file) > 0
-            " call add(fileList, file)
-        " endif
-    " endfor
-    " return fileList
-" endfunction
-
 
 " @return {String}
 function! s:FindTemplateDirUp()
@@ -381,9 +362,7 @@ endfunction
 
 " @return {
 "   scriptExtension?: string
-"   scriptLang?: string
 "   styleExtension?: string
-"   styleLang?: string
 " }
 function! s:ParseStyleAndScript(ext)
     let result = {}
@@ -392,7 +371,6 @@ function! s:ParseStyleAndScript(ext)
         let dotItem = '.' . item
         if s:EndWith(a:ext, dotItem)
             let result.styleExtension = a:ext
-            let result.styleLang=item
             return result
         endif
     endfor
@@ -401,7 +379,6 @@ function! s:ParseStyleAndScript(ext)
         let dotItem = '.' . item
         if s:EndWith(a:ext, dotItem)
             let result.scriptExtension = a:ext
-            let result.scriptLang=item
             return result
         endif
     endfor
@@ -480,7 +457,9 @@ function! s:ParseCreateParams(args, mainFile, isFolderize)
     let result['componentName'] = componentName
     let result['mainExtension'] = mainExtension
     let result['styleExtension'] = styleExtension
+    let result['styleLang'] = s:GetLang(styleExtension)
     let result['scriptExtension'] = scriptExtension
+    let result['scriptLang'] = s:GetLang(scriptExtension)
     let result['indexExtension'] = indexExtension
     let result['isFolderize'] = a:isFolderize
     return result
@@ -574,38 +553,6 @@ function! s:CreateComponentWithFolder(...)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
-" @return {string}
-" function! s:FindScriptFile(mainFile)
-    " let fileList = s:MakeScriptFileList(a:mainFile)
-    " for theFile in fileList
-        " if filereadable(theFile)
-            " return theFile
-        " endif
-    " endfor
-    " return ''
-" endfunction
-
-" @return {string}
-" function! s:FindStyleFile(mainFile)
-    " let fileList = s:MakeStyleFileList(a:mainFile)
-    " for theFile in fileList
-        " if filereadable(theFile)
-            " return theFile
-        " endif
-    " endfor
-    " return ''
-" endfunction
-
-" @return {string}
-" function! s:FindIndexFile(mainFile)
-    " let fileList = s:MakeIndexFileList(a:mainFile)
-    " for theFile in fileList
-        " if filereadable(theFile)
-            " return theFile
-        " endif
-    " endfor
-    " return ''
-" endfunction
 
 " @return {0|1}
 function! s:DetectFolder(mainFile)
@@ -1317,7 +1264,11 @@ endfunction
 " @param {String} filePath
 " @param {String} srcPart
 " @param {String} srcPartNew
-" @param {Array} tagInfoList
+" @param {TagInfo[]} tagInfoList
+" @interface TagInfo {
+"   tagname: string
+"   lang: string
+" }
 function! s:UpdateHtml(filePath, srcPartRegExp, srcPartNewRegExp, tagInfoList)
     if filereadable(a:filePath) == 0 || len(a:tagInfoList) == 0
         echoerr 'File is not readable: ' . a:filePath
@@ -1433,8 +1384,7 @@ function! s:RenameExtension(extension, bang)
         return
     endif
 
-    let lastExt = fnamemodify(fakeFileName, ':e')
-    let lang = get(s:extensionLangMap, lastExt, '')
+    let lang = s:GetLang(fakeFileName)
     let tagname = isScript ? 'script' : 'style'
     let tagConfig = {
         \ 'tagname': tagname,
@@ -1446,6 +1396,7 @@ function! s:RenameExtension(extension, bang)
     if isScript
         let indexFile = get(info, 'indexFile', '')
         if !empty(indexFile)
+            let lastExt = fnamemodify(fakeFileName, ':e')
             let indexFileNew = s:ChangeExtension(indexFile, lastExt)
             if indexFileNew !=# indexFile
                 call s:RenameFile(indexFile, indexFileNew, a:bang)
