@@ -73,7 +73,7 @@ function! s:FindTemplateFile(file, templateDir)
         return ''
     endif
 
-    let extension = fnamemodify(a:file, ':e')
+    let extension = fnamemodify(a:file, ':e:e')
     let isIndexFile = s:IsIndexFile(a:file)
 
     if isIndexFile
@@ -131,7 +131,6 @@ function! s:CreateAndWriteFile(filePath, templateDir, config)
     let templateText = s:ReadFile(templateFilePath)
 
     let content = ''
-    let dateAsString = s:FormatDate()
 
     let componentName = get(a:config, 'componentName', '')
     let pascalCase = s:ToPascalCase(componentName)
@@ -139,16 +138,36 @@ function! s:CreateAndWriteFile(filePath, templateDir, config)
     let camelCase = s:ToCamelCase(componentName)
 
     if strlen(templateText) > 0
+        let mainExtension = get(a:config, 'mainExtension', '')
+        let styleExtension = get(a:config, 'styleExtension', '')
+        let styleLang = get(a:config, 'styleLang', '')
+        let scriptExtension = get(a:config, 'scriptExtension', '')
+        let scriptLang = get(a:config, 'scriptLang', '')
+
         let newText = templateText
         let newText = substitute(newText, '\<ComponentName\>\C', pascalCase, 'g')
         let newText = substitute(newText, '\<component-name\>\C', kebabCase, 'g')
         let newText = substitute(newText, '\<componentName\>\C', camelCase, 'g')
-        let newText = substitute(newText, '\<MAIN_EXTENSION\>\C', get(a:config, 'mainExtension', ''), 'g')
-        let newText = substitute(newText, '\<STYLE_EXTENSION\>\C', get(a:config, 'styleExtension', ''),  'g')
-        let newText = substitute(newText, '\<STYLE_LANG\>\C', get(a:config, 'styleLang', ''),  'g')
-        let newText = substitute(newText, '\<SCRIPT_EXTENSION\>\C', get(a:config, 'scriptExtension'), '', 'g')
-        let newText = substitute(newText, '\<SCRIPT_LANG\>\C', get(a:config, 'scriptLang', ''),  'g')
+
+        if strlen(mainExtension)
+            let newText = substitute(newText, '\<MAIN_EXTENSION\>\C', mainExtension, 'g')
+        endif
+        if strlen(styleExtension)
+            let newText = substitute(newText, '\<STYLE_EXTENSION\>\C', styleExtension,  'g')
+        endif
+        if strlen(styleLang)
+            let newText = substitute(newText, '\<STYLE_LANG\>\C', styleLang,  'g')
+        endif
+        if strlen(scriptExtension)
+            let newText = substitute(newText, '\<SCRIPT_EXTENSION\>\C',  scriptExtension, 'g')
+        endif
+        if strlen(scriptLang)
+            let newText = substitute(newText, '\<SCRIPT_LANG\>\C', scriptLang,  'g')
+        endif
+
+        let dateAsString = s:FormatDate()
         let newText = substitute(newText, '\<CREATE_DATE\>\C', dateAsString, 'g')
+
         let content = newText
     endif
 
@@ -330,7 +349,7 @@ function! s:ToPascalCase(str)
 endfunction
 
 " @return 0 | 1
-function! s:EndWith(text, subText) 
+function! s:EndWith(text, subText)
     let index = strridx(a:text, a:subText)
     if index == -1
         return 0
@@ -436,22 +455,8 @@ function! s:ParseCreateParams(args, mainFile, isFolderize)
         return result
     endif
 
-    "  针对 *.tsx/*.jsx/*.ts 特殊处理
-    if mainExtension ==# 'tsx'
-        let scriptExtension = 'ts'
-    elseif mainExtension ==# 'jsx'
-        let scriptExtension = 'js'
-    elseif mainExtension ==# 'ts'
-        let scriptExtension = ''
-    endif
 
-    if scriptExtension ==# ''
-        " for .ts as mainExtension
-        let indexExtension = 'ts'
-    else
-        let indexExtension = scriptExtension
-    endif
-
+    let indexExtension = scriptExtension ==# '' ? 'ts' : scriptExtension
 
     let result['mainFile'] =  a:mainFile
     let result['componentName'] = componentName
@@ -499,7 +504,12 @@ function! s:CreateComponent(...)
         return
     endif
 
-    call s:LayoutComponent(mainFile, 1, 1)
+    let layoutConfig = {
+                \ 'scriptFile': 1,
+                \ 'styleFile': 1,
+                \ 'indexFile': 1
+                \ }
+    call s:LayoutComponentByMainFile(mainFile, layoutConfig)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
@@ -544,12 +554,17 @@ function! s:CreateComponentWithFolder(...)
     endif
 
 
-    let isCreateOk = s:CreateAndWriteFileList(fileList, mainFile, scriptExtension, styleExtension, mainExtension)
+    let isCreateOk = s:CreateAndWriteFileList(fileList, mainFile, config)
     if !isCreateOk
         return
     endif
 
-    call s:LayoutComponent(mainFile, 1, 1)
+    let layoutConfig = {
+                \ 'scriptFile': 1,
+                \ 'styleFile': 1,
+                \ 'indexFile': 1
+                \ }
+    call s:LayoutComponentByMainFile(mainFile, layoutConfig)
     echomsg 'Success to create ' . join(fileList, ', ')
 endfunction
 
@@ -648,7 +663,7 @@ function! s:GetComponentInfo(mainFile)
 
     let isFolderize = s:DetectFolder(a:mainFile)
 
-    let indexFileName =s:FindIndexFileNameInSiblings(siblings, componentName)
+    let indexFileName =s:FindIndexFileNameInSiblings(siblings)
     let indexFile = empty(indexFileName) ? '' : dirPath . '/' .indexFileName
 
     let styleFileName = s:FindStyleFileNameInSiblings(siblings, componentName)
@@ -676,9 +691,13 @@ function! s:GetComponentInfo(mainFile)
 endfunction
 
 "@param {ComponentInfo} info
-"@param {0|1} includeStyle
-"@param {0|1} includeIndex
-function! s:LayoutComponent(info, includeStyle, includeIndex)
+"@param {LayoutConfig} layoutConfig
+"@interface LayoutConfig {
+"   indexFile: 0 |1
+"   scriptFile: 0 | 1
+"   styleFile: 0 | 1
+"}
+function! s:LayoutComponent(info, layoutConfig)
     if exists('*timer_start')
        if s:kit_component_layout_doing
             return
@@ -695,28 +714,16 @@ function! s:LayoutComponent(info, includeStyle, includeIndex)
     let isFolderize=get(a:info, 'isFolderize', 0)
     let indexFile=get(a:info, 'indexFile', '')
 
-    " Now the main file
-    let fileCount = 1
-    if strlen(scriptFile)
-        let fileCount +=1
-    endif
+    let layoutIndexFile = get(a:layoutConfig, 'indexFile', 0)
+    let layoutStyleFile = get(a:layoutConfig, 'styleFile', 0)
+    let layoutScriptFile = get(a:layoutConfig, 'scriptFile', 0)
 
-    if strlen(styleFile)
-        let fileCount +=1
-    endif
-
-    if fileCount == 1
-        echomsg 'Layout cancel: only 1 file'
-        call s:ResetStatus()
-        return
-    endif
-
-    if strlen(scriptFile) > 0
+    if layoutStyleFile && strlen(scriptFile) > 0
         execute ':new ' . scriptFile
         execute ':only'
-        if a:includeStyle && strlen(styleFile) > 0
+        if layoutStyleFile && strlen(styleFile) > 0
             if isFolderize
-                if a:includeIndex
+                if layoutIndexFile
                     execute ':vnew ' . indexFile
                     execute ':new ' . styleFile
                     execute ':new ' . mainFile
@@ -732,11 +739,11 @@ function! s:LayoutComponent(info, includeStyle, includeIndex)
             execute ':vnew ' . mainFile
         endif
     else
-        if a:includeStyle && strlen(styleFile) > 0
+        if layoutStyleFile && strlen(styleFile) > 0
             execute ':new ' . mainFile
             execute ':only'
             if isFolderize
-                if a:includeIndex
+                if layoutIndexFile
                     execute ':vnew ' . indexFile
                     execute ':new ' . styleFile
                 else
@@ -758,11 +765,10 @@ function! s:LayoutComponent(info, includeStyle, includeIndex)
 endfunction
 
 "@param {string} mainFile
-"@param {0|1} includeStyle
-"@param {0|1} includeIndex
-function! s:LayoutComponentByMainFile(mainFile, includeStyle, includeIndex)
+"@param {LayoutConfig} layoutConfig
+function! s:LayoutComponentByMainFile(mainFile, layoutConfig)
     let info =s:GetComponentInfo(a:mainFile)
-    call s:LayoutComponent(info, a:includeStyle, a:includeIndex)
+    call s:LayoutComponent(info, a:layoutConfig)
 endfunction
 
 function! s:FindMainFile(prefix)
@@ -810,14 +816,15 @@ function! s:GetMainFileByCurrent()
 endfunction
 
 
-function! s:LayoutCurrentComponent(includeIndex)
+"@param {LayoutConfig} layoutConfig
+function! s:LayoutCurrentComponent(layoutConfig)
     if &diff || s:isDiffMode
         return
     endif
 
     let mainFile = s:GetMainFileByCurrent()
     if strlen(mainFile) > 0
-        call s:LayoutComponentByMainFile(mainFile, 1, a:includeIndex)
+        call s:LayoutComponentByMainFile(mainFile, a:layoutConfig)
     else
         echomsg 'Can not find main file for current buffer'
     endif
@@ -829,19 +836,6 @@ function! s:EditCurrentFolder()
     execute ':edit ' . folder
 endfunction
 
-function! s:LayoutTemplateAndScript()
-    if &diff || s:isDiffMode
-        return
-    endif
-
-    let mainFile = s:GetMainFileByCurrent()
-
-    if strlen(mainFile) > 0
-        call s:LayoutComponentByMainFile(mainFile, 0, 0)
-    else
-        echomsg 'Can not find main file for current buffer'
-    endif
-endfunction
 
 " @param {ComponentInfo} info
 " @param {string} type
@@ -997,26 +991,31 @@ endfunction
 
 
 function! s:DoCompLayoutWithMode(mode)
-    if a:mode ==# 'all'
-        call s:LayoutCurrentComponent(1)
-    elseif a:mode ==# 'complex'
-        call s:LayoutCurrentComponent(0)
-    elseif a:mode ==# 'folder'
+    let layoutConfig = {
+                \ 'scriptFile': 1
+                \ }
+
+    if a:mode ==# 'folder'
         call s:EditCurrentFolder()
+    elseif a:mode ==# 'all'
+        let layoutConfig.styleFile = 1
+        let layoutConfig.indexFile = 1
+        call s:LayoutCurrentComponent(layoutConfig)
+    elseif a:mode ==# 'complex'
+        let layoutConfig.styleFile = 1
+        let layoutConfig.indexFile = 0
+        call s:LayoutCurrentComponent(layoutConfig)
     elseif a:mode ==# 'simple'
-         call s:LayoutTemplateAndScript()
+        let layoutConfig.styleFile = 0
+        let layoutConfig.indexFile = 0
+         call s:LayoutCurrentComponent(layoutConfig)
     endif
 endfunction
 
 
 " @param {string} mode  simple, complex, all, folder
 function! s:CompLayoutWithMode(...)
-    if a:0 == 0
-         call s:LayoutTemplateAndScript()
-        return
-    endif
-
-    let mode = a:1
+    let mode = a:0 == 0 ? 'simple' : a:1
     call s:DoCompLayoutWithMode(mode)
 endfunction
 
@@ -1404,7 +1403,12 @@ function! s:RenameExtension(extension, bang)
         endif
     endif
 
-    call s:LayoutComponentByMainFile(mainFile, 1, 1)
+    let layoutConfig = {
+                \ 'scriptFile': 1,
+                \ 'styleFile': 1,
+                \ 'indexFile': 1
+                \ }
+    call s:LayoutComponentByMainFile(mainFile, layoutConfig)
 endfunction
 
 
@@ -1812,8 +1816,11 @@ function! s:BuildIndexFile(indexFile, mainFile, componentName)
     if strlen(a:indexFile) > 0
         let templateDir = s:FindTemplateDirWithType(a:mainFile)
         let mainExtension = fnamemodify(a:mainFile, ':e')
-        let fakeConfig = { 'mainExtension': mainExtension }
-        call s:CreateAndWriteFile(a:indexFile, templateDir, a:componentName, fakeConfig)
+        let fakeConfig = {
+                    \ 'componentName': a:componentName,
+                    \ 'mainExtension': mainExtension
+                    \ }
+        call s:CreateAndWriteFile(a:indexFile, templateDir, fakeConfig)
     endif
 endfunction
 
@@ -1855,7 +1862,12 @@ function! s:FolderizeComponentWithMainFile(mainFile)
         let indexFile = folderPath . '/' . scriptFileExt
         call s:BuildIndexFile(indexFile, mainFileNew, componentName)
 
-        call s:LayoutComponentByMainFile(mainFileNew, 1, 1)
+        let layoutConfig = {
+                    \ 'scriptFile': 1,
+                    \ 'styleFile': 1,
+                    \ 'indexFile': 1
+                    \ }
+        call s:LayoutComponentByMainFile(mainFileNew, layoutConfig)
 
         echo 'Success to folderize component of current buffer.'
     else
