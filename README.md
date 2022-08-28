@@ -13,8 +13,8 @@
 A vue/react/other component is composed by:
 
 1. main file: e.g. `ComponentName.vue`/`ComponentName.tsx`
-1. script file (optional): e.g. `ComponentName.comp.js`
-1. style file (optional): e.g. `ComponentName.comp.css`/`ComponentName.module.css`
+1. script file (optional): e.g. `ComponentName.js` /`ComponentName.comp.ts`
+1. style file (optional): e.g. `ComponentName.css`/`ComponentName.comp.less`/`ComponentName.module.scss`
 1. index file (optional): `index.js`/`index.ts`
 1. utils files... (optional)
 
@@ -48,37 +48,23 @@ components
 
 ## Commands
 
-| command arguments                       | main        | script          | style               | index(`CompCreateFolder`) |
-| :-------------------------------------- | :---------- | :-------------- | :------------------ | :------------------------ |
-| path/to/Example.vue ts                  | Example.vue | Example.ts      | -                   | index.ts                  |
-| path/to/Example.vue comp.ts module.scss | Example.vue | Example.comp.ts | Example.module.scss | index.ts                  |
-| path/to/Example.wpy                     | Example.wpy | -               | -                   | index.js                  |
-| path/to/Example.wpy comp.js comp.css    | Example.wpy | Example.comp.js | Example.comp.css    | index.js                  |
-| path/to/Example.wpy comp.ts module.scss | Example.wpy | Example.comp.ts | Example.module.scss | index.ts                  |
-| path/to/Example.jsx                     | Example.jsx | -               | -                   | index.js                  |
-| path/to/Example.jsx scss                | Example.jsx | -               | Example.scss        | index.js                  |
-| path/to/Example.jsx module.scss         | Example.jsx | -               | Example.module.scss | index.js                  |
-| path/to/Example.tsx                     | Example.tsx | -               |                     | index.ts                  |
-| path/to/Example.tsx module.scss         | Example.tsx | -               | Example.module.scss | index.ts                  |
-| path/to/Example.ts                      | Example.ts  | -               | -                   | index.ts                  |
-| path/to/Example.ts scss                 | Example.ts  | -               | Example.scss        | index.ts                  |
-| path/to/Example.ts module.scss          | Example.ts  | -               | Example.module.scss | index.ts                  |
-
 1. `CompCreate`: create vue component files
     - syntax `:CompCreate ./path/to/ComponentName.[main-extension] [script-extension]? [style-extension]?`
-    - create main/script(optional)/style files
+    - create main/script(optional)/style(optional) files
+    - see **`CompCreate`/`CompCreateFolder` command arguments**
 1. `CompCreateFolder`: like `CompCreate`, create all files under `path/to/ComponentName` folder
-    - create main/script(optional)/style/index files
+    - create main/script(optional)/style(optional)/index files
+    - see **`CompCreate`/`CompCreateFolder` command arguments**
 1. `CompLayout simple/complex/all/folder`: close all windows and layout complonent files.
 1. `CompLayoutAuto simple/complex/all/folder/disable`: set auto layout when opening files
 1. `CompAlt`: switch `main file` -> `script file` (optional) -> `style file` (optional) -> `index file` (optional) -> `main file` -> ...
-1. `CompReset`: reset the status of the plugin
 1. `CompRename`: rename all files of a vue component, and change style/script file path in template file
     - `CompRename NewName` will rename vue/style/script file to `NewName.vue`, `NewName.comp.css`, `NewName.comp.js`
 1. `CompRenameExt`: rename the extension of style/script file, and change style/script file path in template file
     - e.g. `:CompRenameExt ts`/`:CompRenameExt comp.ts`/`:CompRenameExt module.css`/`:CompRenameExt less`
 1. `CompRemove`: remove all files of the component of current buffer
 1. `CompFolderize`: change current component to folder structure
+1. `CompReset`: reset the status of the plugin
 
 ### `:CompLayout`/`:CompLayoutAuto`
 
@@ -90,12 +76,27 @@ A component is composed by:
 1. index file (optional)
 1. utils files... (optional)
 
--   `folder` = the component folder
+-   `folder` = `1 + 2 + 3 + 4 + the component folder`
 -   `all` = `1 + 2 + 3 + 4` (default value)
 -   `complex` = `1 + 2 +3`
 -   `simple` = `1 + 2`
 
 ```
+
+ // :CompLayout folder
+-----------------
+|folder |       |
+|       |       |
+|-------|       |
+| .vue  |       |
+|       |       |
+|-------|  .js  |
+| .css  |       |
+|       |       |
+|-------|       |
+| index |       |
+|       |       |
+-----------------
 
  // :CompLayout all
 -----------------
@@ -130,6 +131,24 @@ A component is composed by:
 
 
 ```
+
+### `CompCreate`/`CompCreateFolder` command arguments
+
+| command arguments                       | main        | script          | style               | index(`CompCreateFolder`) |
+| :-------------------------------------- | :---------- | :-------------- | :------------------ | :------------------------ |
+| path/to/Example.vue ts                  | Example.vue | Example.ts      | -                   | index.ts                  |
+| path/to/Example.vue comp.ts module.scss | Example.vue | Example.comp.ts | Example.module.scss | index.ts                  |
+| path/to/Example.wpy                     | Example.wpy | -               | -                   | index.js                  |
+| path/to/Example.wpy comp.js comp.css    | Example.wpy | Example.comp.js | Example.comp.css    | index.js                  |
+| path/to/Example.wpy comp.ts module.scss | Example.wpy | Example.comp.ts | Example.module.scss | index.ts                  |
+| path/to/Example.jsx                     | Example.jsx | -               | -                   | index.js                  |
+| path/to/Example.jsx scss                | Example.jsx | -               | Example.scss        | index.js                  |
+| path/to/Example.jsx module.scss         | Example.jsx | -               | Example.module.scss | index.js                  |
+| path/to/Example.tsx                     | Example.tsx | -               |                     | index.ts                  |
+| path/to/Example.tsx module.scss         | Example.tsx | -               | Example.module.scss | index.ts                  |
+| path/to/Example.ts                      | Example.ts  | -               | -                   | index.ts                  |
+| path/to/Example.ts scss                 | Example.ts  | -               | Example.scss        | index.ts                  |
+| path/to/Example.ts module.scss          | Example.ts  | -               | Example.module.scss | index.ts                  |
 
 ## Config
 

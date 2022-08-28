@@ -91,15 +91,18 @@ function! s:FindTemplateFile(file, templateDir)
     return ''
 endfunction
 
-" @return {string}
+" @return  {ReadFileResult}
+" @interface ReadFileResult {
+"   readSuccess: 0 | 1
+"   text: string
+" }
 function! s:ReadFile(filePath)
     if !empty(a:filePath) && filereadable(a:filePath)
         let lines = readfile(a:filePath)
         let text = join(lines, s:lineJoinSplitter)
-        return text
+        return { 'readSuccess': 1, 'text': text }
     endif
-
-    return ''
+    return { 'readSuccess': 0, 'text': '' }
 endfunction
 
 " @return {0|1}
@@ -128,7 +131,8 @@ endfunction
 " @return {0|1}
 function! s:CreateAndWriteFile(filePath, templateDir, config)
     let templateFilePath = s:FindTemplateFile(a:filePath, a:templateDir)
-    let templateText = s:ReadFile(templateFilePath)
+    let readTemplateResult = s:ReadFile(templateFilePath)
+    let templateText = get(readTemplateResult, 'text', '')
 
     let content = ''
 
@@ -177,13 +181,15 @@ endfunction
 
 "@return {0|1}
 function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
-    let originalText = s:ReadFile(a:filePath)
-    if strlen(originalText) == 0
+    let readResult = s:ReadFile(a:filePath)
+
+    if readResult.readSuccess == 0
         echoerr 'Failed to read file: ' . a:filePath
         return 0
     endif
 
 
+    let originalText = get(readResult, 'text', '')
     let newText = originalText
 
     " update PascalCase (template or script file)
@@ -357,26 +363,47 @@ function! s:EndWith(text, subText)
     return index + len(a:subText) == len(a:text)
 endfunction
 
-" @param {string} text
-" @param {0|1} isScript
+" @param {string} fileName
+" @param {string} type  'main'/'script'/'style
 " @return {0|1}
-function! s:IsSupportedStyleOrScript(fileName, isScript)
-    if a:isScript
-        for item in s:supportScriptExtensionList
-            let dotItem = '.' . item
-            if s:EndWith(a:fileName, dotItem)
-                return 1
-            endif
-        endfor
-    else
-        for item in s:supportStyleExtensionList
-            let dotItem = '.' . item
-            if s:EndWith(a:fileName, dotItem)
-                return 1
-            endif
-        endfor
+function! s:IsSupportedByExtension(fileName, type)
+    let extList = []
+    if a:type ==# 'main'
+        let extList = s:supportMainFileExtensionList
+    elseif a:type ==# 'style'
+        let extList = s:supportStyleExtensionList
+    elseif a:type ==# 'script'
+        let extList = s:supportScriptExtensionList
     endif
+
+    for item in extList
+        let dotItem = '.' . item
+        if s:EndWith(a:fileName, dotItem)
+            return 1
+        endif
+    endfor
+
     return 0
+endfunction
+
+" @param {string} fileName
+" @return {0|1}
+function! s:IsSupportedStyleExtension(fileName)
+    return s:IsSupportedByExtension(a:fileName, 'style')
+endfunction
+
+" @param {string} fileName
+" @return {0|1}
+function! s:IsSupportedScriptExtension(fileName)
+    return s:IsSupportedByExtension(a:fileName, 'script')
+endfunction
+
+
+
+" @param {string} fileName
+" @return {0|1}
+function! s:IsSupportedMainExtension(fileName)
+    return s:IsSupportedByExtension(a:fileName, 'main')
 endfunction
 
 " @return {
@@ -386,26 +413,30 @@ endfunction
 function! s:ParseStyleAndScript(ext)
     let result = {}
 
-    for item in s:supportStyleExtensionList
-        let dotItem = '.' . item
-        if s:EndWith(a:ext, dotItem)
-            let result.styleExtension = a:ext
-            return result
-        endif
-    endfor
-
-    for item in s:supportScriptExtensionList
-        let dotItem = '.' . item
-        if s:EndWith(a:ext, dotItem)
-            let result.scriptExtension = a:ext
-            return result
-        endif
-    endfor
+    let fakeName = 'fake.' . a:ext
+    if s:IsSupportedStyleExtension(fakeName)
+        let result.styleExtension = a:ext
+    elseif s:IsSupportedScriptExtension(fakeName)
+        let result.scriptExtension = a:ext
+    endif
 
     return result
 endfunction
 
 
+function! s:GetIndexExtension(scriptFile, mainFile)
+    let indexExt = 'js'
+    let scriptLastExtension = fnamemodify(a:scriptFile, ':e')
+    let mainLastExtension = fnamemodify(a:mainFile, ':e')
+    if empty(scriptLastExtension)
+        if mainLastExtension ==# 'tsx' || mainLastExtension ==# 'ts'
+            let indexExt = 'ts'
+        endif
+    else
+        let indexExt = scriptLastExtension
+    endif
+    return indexExt
+endfunction
 
 
 " @return interface CreateConfig {
@@ -441,12 +472,14 @@ function! s:ParseCreateParams(args, mainFile, isFolderize)
             let item = get(a:args, counter)
             let parsedItem = s:ParseStyleAndScript(item)
             let ext = get(parsedItem, 'styleExtension', '')
+
             if len(ext) > 0
                 let styleExtension = ext
-            endif
-            let ext = get(parsedItem, 'scriptExtension', '')
-            if len(ext) > 0
-                let scriptExtension = ext
+            else
+                let ext = get(parsedItem, 'scriptExtension', '')
+                if len(ext) > 0
+                    let scriptExtension = ext
+                endif
             endif
 
             let counter += 1
@@ -456,7 +489,8 @@ function! s:ParseCreateParams(args, mainFile, isFolderize)
     endif
 
 
-    let indexExtension = scriptExtension ==# '' ? 'ts' : scriptExtension
+    let fakeScriptFile = 'fake.' . scriptExtension
+    let indexExtension = s:GetIndexExtension(fakeScriptFile, a:mainFile)
 
     let result['mainFile'] =  a:mainFile
     let result['componentName'] = componentName
@@ -617,7 +651,7 @@ endfunction
 function! s:FindStyleFileNameInSiblings(names, componentName)
     let componentNameDot = a:componentName . '.'
     for name in a:names
-        if stridx(name, componentNameDot) > -1 && s:IsSupportedStyleOrScript(name, 0)
+        if stridx(name, componentNameDot) > -1 && s:IsSupportedStyleExtension(name)
             return name
         endif
     endfor
@@ -627,7 +661,7 @@ endfunction
 function! s:FindScriptFileNameInSiblings(names, componentName)
     let componentNameDot = a:componentName . '.'
     for name in a:names
-        if stridx(name, componentNameDot) > -1 && s:IsSupportedStyleOrScript(name, 1)
+        if stridx(name, componentNameDot) > -1 && s:IsSupportedScriptExtension(name)
             return name
         endif
     endfor
@@ -693,9 +727,10 @@ endfunction
 "@param {ComponentInfo} info
 "@param {LayoutConfig} layoutConfig
 "@interface LayoutConfig {
-"   indexFile: 0 |1
-"   scriptFile: 0 | 1
-"   styleFile: 0 | 1
+"   indexFile?: 0 |1
+"   scriptFile?: 0 | 1
+"   styleFile?: 0 | 1
+"   folder?: 0 | 1
 "}
 function! s:LayoutComponent(info, layoutConfig)
     if exists('*timer_start')
@@ -713,7 +748,9 @@ function! s:LayoutComponent(info, layoutConfig)
     let styleFile=get(a:info, 'styleFile', '')
     let isFolderize=get(a:info, 'isFolderize', 0)
     let indexFile=get(a:info, 'indexFile', '')
+    let dirPath = get(a:info, 'dirPath', '')
 
+    let layoutFolder = get(a:layoutConfig, 'folder', 0)
     let layoutIndexFile = get(a:layoutConfig, 'indexFile', 0)
     let layoutStyleFile = get(a:layoutConfig, 'styleFile', 0)
     let layoutScriptFile = get(a:layoutConfig, 'scriptFile', 0)
@@ -759,6 +796,10 @@ function! s:LayoutComponent(info, layoutConfig)
         endif
     endif
 
+    if layoutFolder
+        execute ':new ' . dirPath
+    endif
+
     if exists('*timer_start')
         call timer_start(500, 'KitLayoutComponentEnd')
     endif
@@ -791,17 +832,17 @@ function! s:GetMainFileByFile(file)
         let componentName = s:GetComponentNameFromIndex(a:file)
         let prefix = fnamemodify(a:file, ':p:h') . '/' . componentName
         let mainFile = s:FindMainFile(prefix)
-    elseif index(s:supportMainFileExtensionList, extension) > -1
+    elseif s:IsSupportedMainExtension(a:file)
         if extension ==# 'ts'
             let prefix = fnamemodify(a:file, ':r:r')
             let mainFile = s:FindMainFile(prefix)
         else
             let mainFile = a:file
         endif
-    elseif index(s:supportStyleExtensionList, extension) > -1
+    elseif s:IsSupportedStyleExtension(a:file)
         let prefix = fnamemodify(a:file, ':r:r')
         let mainFile = s:FindMainFile(prefix)
-    elseif index(s:supportScriptExtensionList, extension) > -1
+    elseif s:IsSupportedScriptExtension(a:file)
         let prefix = fnamemodify(a:file, ':r:r')
         let mainFile = s:FindMainFile(prefix)
     endif
@@ -856,7 +897,7 @@ function! s:getFileByType(info, type)
 endfunction
 
 " @param {String} mainFile
-" @param {String} currentType  valid values: template, style, script, index
+" @param {String} currentType  valid values: main, style, script, index
 function! s:SwitchFile(mainFile, currentType)
     let orderList = ['main', 'script', 'style', 'index']
     let targetFile = ''
@@ -903,17 +944,17 @@ function! s:SwitchCurrentComponent()
     endif
 
     let file = expand('%')
-    let extension = fnamemodify(file, ':e')
 
     let mainFile = s:GetMainFileByFile(file)
+
     let currentType = ''
     if s:IsIndexFile(file)
         let currentType = 'index'
-    elseif index(s:supportMainFileExtensionList, extension) > -1
+    elseif s:IsSupportedMainExtension(file)
         let currentType = 'main'
-    elseif index(s:supportStyleExtensionList, extension) > -1
+    elseif s:IsSupportedStyleExtension(file)
         let currentType = 'style'
-    elseif index(s:supportScriptExtensionList, extension) > -1
+    elseif s:IsSupportedScriptExtension(file)
         let currentType = 'script'
     endif
 
@@ -996,20 +1037,19 @@ function! s:DoCompLayoutWithMode(mode)
                 \ }
 
     if a:mode ==# 'folder'
-        call s:EditCurrentFolder()
+        let layoutConfig.styleFile = 1
+        let layoutConfig.indexFile = 1
+        let layoutConfig.folder = 1
     elseif a:mode ==# 'all'
         let layoutConfig.styleFile = 1
         let layoutConfig.indexFile = 1
-        call s:LayoutCurrentComponent(layoutConfig)
     elseif a:mode ==# 'complex'
         let layoutConfig.styleFile = 1
-        let layoutConfig.indexFile = 0
-        call s:LayoutCurrentComponent(layoutConfig)
     elseif a:mode ==# 'simple'
-        let layoutConfig.styleFile = 0
-        let layoutConfig.indexFile = 0
-         call s:LayoutCurrentComponent(layoutConfig)
+        " do nothing
     endif
+
+    call s:LayoutCurrentComponent(layoutConfig)
 endfunction
 
 
@@ -1047,6 +1087,10 @@ endfunction
 function s:Rename3Files(info, newComponentName, bang)
     let componentName = get(a:info, 'componentName', '')
     let dirPath = get(a:info, 'dirPath', '')
+
+    " echomsg 'Rename3Files info/newComponentName'
+    " echomsg json_encode(a:info)
+    " echomsg a:newComponentName
 
     let mainFileName = get(a:info, 'mainFileName', '')
     let mainFile = get(a:info, 'mainFile')
@@ -1112,6 +1156,11 @@ endfunction
 function! s:RenameComponentWithoutFolder(info, name, bang)
     let newInfo = s:Rename3Files(a:info, a:name, a:bang)
     if !empty(newInfo)
+        let layoutConfig = {
+                    \ 'scriptFile': 1,
+                    \ 'styleFile': 1,
+                    \ 'indexFile': 1
+                    \ }
         call s:LayoutComponent(newInfo, 1, 1)
     endif
 endfunction
@@ -1127,12 +1176,13 @@ function s:UpdateIndexFile(indexFile, componentName, newComponentName, bang)
         return 0
     endif
 
-    let originalText = s:ReadFile(a:indexFile)
-    if strlen(originalText) == 0
+    let readResult = s:ReadFile(a:indexFile)
+    if readResult.readSuccess == 0
         echoerr 'Failed to read file: ' . a:indexFile
         return
     endif
 
+    let originalText = get(readResult, 'text', '')
     let newText = substitute(originalText, '\<' . a:componentName . '\>\C', a:newComponentName, 'g')
 
     let writeOk = s:WriteFile(newText, a:indexFile)
@@ -1156,7 +1206,7 @@ function! s:RenameComponentWithFolder(info, newComponentName, bang)
     endif
 
 
-    let indexFileAfterDirRename = newDirPath . '/' . a:info.indexFileName
+    let indexFileAfterDirRename = empty(a:info.indexFileName) ? '' : newDirPath . '/' . a:info.indexFileName
     let infoAfterDirRename = {
                 \ 'isFolderize': a:info.isFolderize,
                 \ 'componentName': componentName,
@@ -1164,9 +1214,9 @@ function! s:RenameComponentWithFolder(info, newComponentName, bang)
                 \ 'mainFileName': a:info.mainFileName,
                 \ 'mainFile': newDirPath . '/' .  a:info.mainFileName,
                 \ 'scriptFileName': a:info.scriptFileName,
-                \ 'scriptFile': newDirPath . '/' .  a:info.scriptFileName,
+                \ 'scriptFile': empty(a:info.scriptFileName) ? '' : newDirPath . '/' .  a:info.scriptFileName,
                 \ 'styleFileName': a:info.styleFileName,
-                \ 'styleFile': newDirPath . '/' .  a:info.styleFileName,
+                \ 'styleFile': empty(a:info.styleFileName) ? '' : newDirPath . '/' .  a:info.styleFileName,
                 \ 'indexFileName': a:info.indexFileName,
                 \ 'indexFile': indexFileAfterDirRename
                 \ }
@@ -1179,7 +1229,13 @@ function! s:RenameComponentWithFolder(info, newComponentName, bang)
     endif
 
     call s:UpdateIndexFile(indexFileAfterDirRename, componentName, a:newComponentName, a:bang)
-    call s:LayoutComponent(newInfo, 1, 1)
+
+    let layoutConfig = {
+                \ 'scriptFile': 1,
+                \ 'styleFile': 1,
+                \ 'indexFile': 1
+                \ }
+    call s:LayoutComponent(newInfo, layoutConfig)
 endfunction
 
 
@@ -1358,9 +1414,9 @@ function! s:RenameExtension(extension, bang)
     let fakeFileName = 'fake.' . a:extension
 
 
-    if s:IsSupportedStyleOrScript(fakeFileName, 0)
+    if s:IsSupportedStyleExtension(fakeFileName)
         let isScript = 0
-    elseif s:IsSupportedStyleOrScript(fakeFileName, 1)
+    elseif s:IsSupportedScriptExtension(fakeFileName)
         let isScript = 1
     endif
 
@@ -1854,12 +1910,8 @@ function! s:FolderizeComponentWithMainFile(mainFile)
         let mainFileName = get(info, 'mainFileName', '')
         let mainFileNew = folderPath . '/' . mainFileName
 
-        let scriptFileExt = 'ts'
-        if strlen(scriptFile) > 0
-            let scriptFileExt = fnamemodify(scriptFile, ':e')
-        endif
-
-        let indexFile = folderPath . '/' . scriptFileExt
+        let indexFileExt = s:GetIndexExtension(scriptFile, mainFileName)
+        let indexFile = folderPath . '/' . indexFileExt
         call s:BuildIndexFile(indexFile, mainFileNew, componentName)
 
         let layoutConfig = {
