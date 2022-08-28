@@ -195,7 +195,7 @@ function! s:UpdateComponentNameInFile(filePath, componentName, componentNameNew)
     " update PascalCase (template or script file)
     let pascalCase = s:ToPascalCase(a:componentName)
     let pascalCaseNew = s:ToPascalCase(a:componentNameNew)
-    let newText = substitute(newText, '\<' . a:componentName . '\>\C', pascalCase  , 'g')
+    let newText = substitute(newText, '\<' . pascalCase . '\>\C', pascalCaseNew  , 'g')
     let newText = substitute(newText, '\<ComponentName\>\C', pascalCaseNew  , 'g')
 
     " update kebab case (template or style file)
