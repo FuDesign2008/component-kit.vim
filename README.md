@@ -175,7 +175,7 @@ A component is composed by:
 | `STYLE_LANG`       | for vue `lang` attribute, e.g. `scss`/`less`                      |
 | `SCRIPT_EXTENSION` | the extension for script file, e.g. `js`/`comp.js`/`comp.ts`      |
 | `SCRIPT_LANG`      | for vue `lang` attribute, e.g. `js`/`ts`                          |
-| `CREATE_DATE`      | create data, e.g. `2022-8-27`                                     |
+| `CREATE_DATE`      | create date, e.g. `2022-08-27`                                    |
 
 ## Support
 
