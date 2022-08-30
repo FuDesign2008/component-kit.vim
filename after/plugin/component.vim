@@ -277,7 +277,7 @@ endfunction
 " @return {String}
 function! s:FindTemplateDirUp()
     let currentDir = fnamemodify(getcwd(), ':p')
-    let templateDirName = '.kit-component-template'
+    let templateDirName = 'component-template'
 
     " the length of the root path  will more than 1
     while strlen(currentDir) > 1
@@ -294,24 +294,26 @@ endfunction
 
 " @return {String}
 function! s:FindTemplateDir()
-    if exists('g:kit_component_template_dir')
+    let builtInTemplateDir = s:scriptDir . '/' . 'templates'
+
+    if exists('g:kit_component_template_dir') && empty(g:kit_component_template_dir) == 0
         if g:kit_component_template_dir ==# 'built-in'
-            return s:scriptDir . '/' . 'templates'
+            return builtInTemplateDir
         endif
-        if !isdirectory(g:kit_component_template_dir)
+        if isdirectory(g:kit_component_template_dir)
+            return g:kit_component_template_dir
+        else
             echoerr 'g:kit_component_template_dir is not a directory: ' . g:kit_component_template_dir
             return ''
         endif
-        return g:kit_component_template_dir
     else
         let templateDir = s:FindTemplateDirUp()
         if strlen(templateDir) > 0
             return templateDir
+        else
+            return builtInTemplateDir
         endif
     endif
-
-    echoerr 'Can not find .kit-component-template directory, please set g:kit_component_template_dir in .vimrc'
-    return ''
 endfunction
 
 " @return {String}

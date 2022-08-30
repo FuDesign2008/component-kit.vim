@@ -154,7 +154,7 @@ A component is composed by:
 
 1.  `g:kit_component_template_dir`: The template directory for creating component ( @see `:CompCreate` command ), `template.js` for `.js`, `template.vue` for `.vue`, and so on.
     -   If `g:kit_component_template_dir` is equal `built-in`, the plugin will use template files in this plugin
-    -   If `g:kit_component_template_dir` is not set, the plugin will find `.kit-component-template` directory up util home (`~`)
+    -   If `g:kit_component_template_dir` is not set, the plugin will find `component-template` directory up util home (`~`). If `component-template` is not found, the built-in template use be used.
     -   Special words in in template files will be replaced by vue/style/script extension when creating or renaming, see **Special Words In Template**
 1.  `g:kit_component_auto_layout`: Call `:CompLayout` automatically when opening `*.vue`/`*.wpy` or `index.js/index.ts` files, only support if vim (8.0+) has `timer_start` command, see `:help timer_start`
     -   If the value is `disable`, no command will be called
