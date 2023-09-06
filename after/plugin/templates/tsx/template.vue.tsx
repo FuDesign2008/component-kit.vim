@@ -8,7 +8,7 @@ import {
 } from '@vue/composition-api'
 import styles from './ComponentName.module.scss'
 
-export default defineComponent({
+export const ComponentName = defineComponent({
   name: 'ComponentName',
 
   // emits: { },

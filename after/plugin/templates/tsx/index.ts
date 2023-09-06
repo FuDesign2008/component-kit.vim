@@ -1,3 +1,1 @@
-import ComponentName from './ComponentName'
-
-export { ComponentName }
+export * from './ComponentName'
