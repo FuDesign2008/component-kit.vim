@@ -1,10 +1,3 @@
-/**
- *
- * @author fuyg
- * @date  CREATE_DATE
- */
-
-
 import wepy from 'wepy'
 
 class ComponentName extends wepy.component {

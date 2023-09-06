@@ -1,8 +1,3 @@
-/**
- *
- * @author fuyg
- * @date  CREATE_DATE
- */
 import React from 'react'
 import styles from './ComponentName.module.scss'
 

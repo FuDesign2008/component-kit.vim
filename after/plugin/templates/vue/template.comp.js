@@ -1,9 +1,3 @@
-/**
- *
- * @author fuyg
- * @date  CREATE_DATE
- */
-
 import Vue from 'vue'
 // import { mapState, mapGetters, mapActions } from 'vuex'
 
